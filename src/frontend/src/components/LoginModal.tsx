@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useActor } from "@/hooks/useActor";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -25,14 +26,16 @@ export default function LoginModal({
   onOpenSignup,
   onLoginSuccess,
 }: Props) {
+  const { actor } = useActor();
   const [view, setView] = useState<View>("login");
   const [form, setForm] = useState({ username: "", password: "" });
   const [resetPhone, setResetPhone] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const set =
-    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
+    };
 
   const handleClose = () => {
     onClose();
@@ -48,12 +51,24 @@ export default function LoginModal({
       return;
     }
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSubmitting(false);
-    toast.success(`Welcome back, ${form.username}!`);
-    onLoginSuccess(form.username);
-    setForm({ username: "", password: "" });
-    setView("login");
+    try {
+      const result = actor
+        ? await actor.loginAccount(form.username, form.password)
+        : "error:Service unavailable";
+      if (result.startsWith("ok:")) {
+        toast.success(`Welcome back, ${form.username}!`);
+        onLoginSuccess(form.username);
+        setForm({ username: "", password: "" });
+        setView("login");
+      } else {
+        const msg = result.startsWith("error:") ? result.slice(6) : result;
+        toast.error(msg);
+      }
+    } catch {
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleForgot = async (e: React.FormEvent) => {

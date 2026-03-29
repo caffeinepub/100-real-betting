@@ -33,6 +33,8 @@ const METHOD_LABELS = {
   bank: "Bank Transfer",
 };
 
+const QUICK_AMOUNTS = [500, 1000, 2000, 5000];
+
 export default function PaymentModal({
   open,
   onClose,
@@ -53,6 +55,10 @@ export default function PaymentModal({
     const num = Number.parseFloat(depositAmount);
     if (!num || num <= 0) {
       toast.error("Please enter a valid amount.");
+      return;
+    }
+    if (num < 500) {
+      toast.error("Minimum deposit is PKR 500.");
       return;
     }
     try {
@@ -136,7 +142,7 @@ export default function PaymentModal({
                   <p className="text-muted-foreground">
                     Number:{" "}
                     <span className="font-mono font-bold text-foreground">
-                      0300-1234567
+                      03125030697
                     </span>
                   </p>
                   <p className="text-muted-foreground">
@@ -155,13 +161,13 @@ export default function PaymentModal({
                   <p className="text-muted-foreground">
                     Number:{" "}
                     <span className="font-mono font-bold text-foreground">
-                      0333-9876543
+                      03125030697
                     </span>
                   </p>
                   <p className="text-muted-foreground">
                     Account Name:{" "}
                     <span className="font-bold text-foreground">
-                      BettingHub
+                      100Real Pvt Ltd
                     </span>
                   </p>
                 </>
@@ -196,17 +202,44 @@ export default function PaymentModal({
               )}
             </div>
 
-            <div className="space-y-1.5">
+            {/* Quick amount buttons */}
+            <div>
+              <Label className="text-xs font-semibold text-muted-foreground mb-2 block">
+                Quick Select
+              </Label>
+              <div className="grid grid-cols-4 gap-2">
+                {QUICK_AMOUNTS.map((amt) => (
+                  <button
+                    key={amt}
+                    type="button"
+                    data-ocid="payment.deposit.quick.button"
+                    onClick={() => setDepositAmount(String(amt))}
+                    className={`py-1.5 rounded-lg border text-xs font-bold transition-all ${
+                      depositAmount === String(amt)
+                        ? "border-emerald-brand bg-emerald-brand/10 text-emerald-brand"
+                        : "border-border text-muted-foreground hover:border-emerald-brand/50"
+                    }`}
+                  >
+                    PKR {amt.toLocaleString()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-1">
               <Label htmlFor="deposit-amount">Amount (PKR)</Label>
               <Input
                 id="deposit-amount"
                 data-ocid="payment.deposit.amount.input"
                 type="number"
-                min="1"
-                placeholder="Enter amount..."
+                min="500"
+                placeholder="Min. PKR 500"
                 value={depositAmount}
                 onChange={(e) => setDepositAmount(e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">
+                Minimum deposit: PKR 500
+              </p>
             </div>
 
             <div>

@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import MyBets from "./pages/MyBets";
 import Promotions from "./pages/Promotions";
 import Support from "./pages/Support";
+import VipPage from "./pages/VipPage";
 
 export type Page =
   | "dashboard"
@@ -21,7 +22,8 @@ export type Page =
   | "support"
   | "my-bets"
   | "admin"
-  | "casino";
+  | "casino"
+  | "vip";
 
 export interface LocalUser {
   username: string;
@@ -71,6 +73,8 @@ export default function App() {
         return <Promotions />;
       case "support":
         return <Support />;
+      case "vip":
+        return <VipPage />;
       default:
         return <Dashboard onNavigate={setPage} />;
     }

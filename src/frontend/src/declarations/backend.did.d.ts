@@ -46,6 +46,7 @@ export interface UserAccount {
   'totalLost' : number,
   'totalWon' : number,
 }
+export interface UserProfile { 'name' : string }
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
@@ -57,15 +58,23 @@ export interface _SERVICE {
     [string, string, string, Time, Array<Selection>],
     bigint
   >,
-  'depositCredits' : ActorMethod<[number], undefined>,
+  'depositCredits' : ActorMethod<[number], number>,
   'getActiveMarkets' : ActorMethod<[], Array<Event>>,
+  'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
   'getEvent' : ActorMethod<[bigint], Event>,
   'getMyAccountSummary' : ActorMethod<[], UserAccount>,
   'getMyBalance' : ActorMethod<[], number>,
   'getMyBets' : ActorMethod<[], Array<Bet>>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'loginAccount' : ActorMethod<[string, string], string>,
   'placeBet' : ActorMethod<[bigint, bigint, number], bigint>,
+  'registerAccount' : ActorMethod<
+    [string, string, string, string, string],
+    string
+  >,
+  'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'settleEvent' : ActorMethod<[bigint, bigint], undefined>,
   'updateEventStatus' : ActorMethod<[bigint, Status], undefined>,
 }

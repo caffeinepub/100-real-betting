@@ -35,6 +35,7 @@ export const Event = IDL.Record({
   'sport' : IDL.Text,
   'selections' : IDL.Vec(Selection),
 });
+export const UserProfile = IDL.Record({ 'name' : IDL.Text });
 export const UserAccount = IDL.Record({
   'balance' : IDL.Float64,
   'user' : IDL.Principal,
@@ -67,15 +68,28 @@ export const idlService = IDL.Service({
       [IDL.Nat],
       [],
     ),
-  'depositCredits' : IDL.Func([IDL.Float64], [], []),
+  'depositCredits' : IDL.Func([IDL.Float64], [IDL.Float64], []),
   'getActiveMarkets' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+  'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
   'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
   'getMyAccountSummary' : IDL.Func([], [UserAccount], ['query']),
   'getMyBalance' : IDL.Func([], [IDL.Float64], ['query']),
   'getMyBets' : IDL.Func([], [IDL.Vec(Bet)], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'loginAccount' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'placeBet' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Float64], [IDL.Nat], []),
+  'registerAccount' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
+  'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
   'settleEvent' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
   'updateEventStatus' : IDL.Func([IDL.Nat, Status], [], []),
 });
@@ -110,6 +124,7 @@ export const idlFactory = ({ IDL }) => {
     'sport' : IDL.Text,
     'selections' : IDL.Vec(Selection),
   });
+  const UserProfile = IDL.Record({ 'name' : IDL.Text });
   const UserAccount = IDL.Record({
     'balance' : IDL.Float64,
     'user' : IDL.Principal,
@@ -142,15 +157,28 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
-    'depositCredits' : IDL.Func([IDL.Float64], [], []),
+    'depositCredits' : IDL.Func([IDL.Float64], [IDL.Float64], []),
     'getActiveMarkets' : IDL.Func([], [IDL.Vec(Event)], ['query']),
+    'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
     'getEvent' : IDL.Func([IDL.Nat], [Event], ['query']),
     'getMyAccountSummary' : IDL.Func([], [UserAccount], ['query']),
     'getMyBalance' : IDL.Func([], [IDL.Float64], ['query']),
     'getMyBets' : IDL.Func([], [IDL.Vec(Bet)], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'loginAccount' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'placeBet' : IDL.Func([IDL.Nat, IDL.Nat, IDL.Float64], [IDL.Nat], []),
+    'registerAccount' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
     'settleEvent' : IDL.Func([IDL.Nat, IDL.Nat], [], []),
     'updateEventStatus' : IDL.Func([IDL.Nat, Status], [], []),
   });

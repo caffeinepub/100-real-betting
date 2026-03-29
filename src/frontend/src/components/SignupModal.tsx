@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useActor } from "@/hooks/useActor";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export default function SignupModal({ open, onClose }: Props) {
+  const { actor } = useActor();
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
@@ -27,8 +29,20 @@ export default function SignupModal({ open, onClose }: Props) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const set =
-    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    (key: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm((prev) => ({ ...prev, [key]: e.target.value }));
+    };
+
+  const resetForm = () => {
+    setForm({
+      fullName: "",
+      phone: "",
+      username: "",
+      password: "",
+      confirmPassword: "",
+      referralCode: "",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,18 +55,28 @@ export default function SignupModal({ open, onClose }: Props) {
       return;
     }
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setIsSubmitting(false);
-    toast.success("Account created! Please login to continue.");
-    onClose();
-    setForm({
-      fullName: "",
-      phone: "",
-      username: "",
-      password: "",
-      confirmPassword: "",
-      referralCode: "",
-    });
+    try {
+      const result = actor
+        ? await actor.registerAccount(
+            form.username,
+            form.password,
+            form.fullName,
+            form.phone,
+            form.referralCode,
+          )
+        : "Service unavailable";
+      if (result === "ok") {
+        toast.success("Account created! Please login to continue.");
+        onClose();
+        resetForm();
+      } else {
+        toast.error(result);
+      }
+    } catch {
+      toast.error("Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (

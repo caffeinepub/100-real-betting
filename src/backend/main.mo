@@ -7,9 +7,13 @@ import Time "mo:core/Time";
 import Int "mo:core/Int";
 import Order "mo:core/Order";
 import Iter "mo:core/Iter";
+import Char "mo:core/Char";
+import Text "mo:core/Text";
 import Nat "mo:core/Nat";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
+
 
 actor {
   // ******** TYPES ********
@@ -76,6 +80,26 @@ actor {
     totalLost : Float;
   };
 
+  module Profile {
+    public func compare(profile1 : Profile, profile2 : Profile) : Order.Order {
+      Text.compare(profile1.username, profile2.username);
+    };
+  };
+
+  type Profile = {
+    username : Text;
+    password : Text;
+    fullName : Text;
+    phone : Text;
+    referralCode : Text;
+    createdAt : Time.Time;
+  };
+
+  // UserProfile type for frontend integration
+  public type UserProfile = {
+    name : Text;
+  };
+
   // ******** STATE ********
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
@@ -84,6 +108,8 @@ actor {
   let events = Map.empty<Nat, Event>();
   let bets = Map.empty<Nat, Bet>();
   let users = Map.empty<Principal, UserAccount>();
+  let profiles = Map.empty<Text, Profile>();
+  let userProfiles = Map.empty<Principal, UserProfile>();
 
   var eventIdCounter = 0;
   var betIdCounter = 0;
@@ -117,7 +143,7 @@ actor {
     };
   };
 
-  func updateUserBalanceInternal(user : Principal, amount : Float) : () {
+  func updateUserBalanceInternal(user : Principal, amount : Float) {
     let userAccount = getUserAccountInternal(user);
     let newBalance = userAccount.balance + amount;
     if (newBalance < 0) {
@@ -130,9 +156,88 @@ actor {
     users.add(user, updated);
   };
 
+  // ******** USER PROFILE FUNCTIONS (Required by frontend) ********
+  public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can view profiles");
+    };
+    userProfiles.get(caller);
+  };
+
+  public query ({ caller }) func getUserProfile(user : Principal) : async ?UserProfile {
+    if (caller != user and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(user);
+  };
+
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // ******** USER AUTH ********
+  public shared ({ caller }) func registerAccount(username : Text, password : Text, fullName : Text, phone : Text, referralCode : Text) : async Text {
+    // No authorization check - public registration endpoint
+    if (username.size() < 3 or username.size() > 14 or not username.toArray().all(func(c) { c.isAlphabetic() or c.isDigit() })) {
+      Runtime.trap("Username must be 3-15 characters and cannot contain whitespace");
+    };
+
+    if (password.size() < 4) {
+      Runtime.trap("Password must be at least 4 characters");
+    };
+
+    if (fullName.size() < 3) {
+      Runtime.trap("Full name must be at least 3 characters");
+    };
+
+    if (phone.size() < 6) {
+      Runtime.trap("Please enter a valid phone number");
+    };
+
+    switch (profiles.get(username)) {
+      case (?_existing) {
+        Runtime.trap("Username already taken");
+      };
+      case (null) {
+        let matchingPhone = profiles.values().find(
+          func(p) { p.phone == phone }
+        );
+        switch (matchingPhone) {
+          case (?_existing) { Runtime.trap("This phone number is already registered") };
+          case (null) { (); };
+        };
+        let profile : Profile = {
+          username;
+          password; // TODO: Add password hashing
+          fullName;
+          phone;
+          referralCode;
+          createdAt = Time.now();
+        };
+        profiles.add(username, profile);
+      };
+    };
+    "ok";
+  };
+
+  public shared ({ caller }) func loginAccount(username : Text, password : Text) : async Text {
+    // No authorization check - public login endpoint
+    let profile = switch (profiles.get(username)) {
+      case (null) { Runtime.trap("Invalid username") };
+      case (?profile) { profile };
+    };
+    if (profile.password != password) {
+      Runtime.trap("Invalid password");
+    };
+    "ok:" # profile.fullName;
+  };
+
   // ******** BETTING MARKET FUNCTIONS ********
   public shared ({ caller }) func createEvent(title : Text, description : Text, sport : Text, startTime : Time.Time, selections : [Selection]) : async Nat {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can create events");
     };
     let eventId = eventIdCounter;
@@ -157,7 +262,7 @@ actor {
   };
 
   public shared ({ caller }) func updateEventStatus(eventId : Nat, status : Event.Status) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can update event status");
     };
     let updatedEvent = switch (events.get(eventId)) {
@@ -173,7 +278,7 @@ actor {
   };
 
   public shared ({ caller }) func cancelEvent(eventId : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can cancel events");
     };
     let event = switch (events.get(eventId)) {
@@ -198,7 +303,7 @@ actor {
   };
 
   public shared ({ caller }) func settleEvent(eventId : Nat, winningSelectionId : Nat) : async () {
-    if (not (AccessControl.isAdmin(accessControlState, caller))) {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can settle events");
     };
     let updatedEvent = switch (events.get(eventId)) {
@@ -243,7 +348,7 @@ actor {
 
   // ******** USER FUNCTIONS ********
   // Function to deposit credits into account
-  public shared ({ caller }) func depositCredits(amount : Float) : async () {
+  public shared ({ caller }) func depositCredits(amount : Float) : async Float {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
       Runtime.trap("Unauthorized: Only users can deposit credits");
     };
@@ -270,6 +375,7 @@ actor {
         users.add(caller, { user with balance = newBalance });
       };
     };
+    getUserAccountInternal(caller).balance;
   };
 
   public shared ({ caller }) func placeBet(eventId : Nat, selectionId : Nat, stake : Float) : async Nat {
@@ -333,6 +439,7 @@ actor {
 
   // ******** QUERY FUNCTIONS ********
   public query ({ caller }) func getActiveMarkets() : async [Event] {
+    // No authorization check - public endpoint
     events.values().toArray().filter(
       func(event) {
         switch (event.status) {
@@ -368,6 +475,7 @@ actor {
   };
 
   public query ({ caller }) func getEvent(eventId : Nat) : async Event {
+    // No authorization check - public endpoint
     switch (events.get(eventId)) {
       case (null) { Runtime.trap("Event not found") };
       case (?event) { event };

@@ -10,7 +10,11 @@ const PROMOTIONS = [
     description:
       "Get 1000 free credits when you sign up and make your first deposit.",
     badge: "NEW PLAYER",
-    badgeColor: "bg-blue-100 text-blue-700",
+    badgeStyle: {
+      background: "oklch(0.72 0.15 195)",
+      color: "oklch(0.1 0.02 280)",
+    },
+    accentColor: "oklch(0.72 0.15 195)",
     cta: "Claim Now",
   },
   {
@@ -19,7 +23,8 @@ const PROMOTIONS = [
     description:
       "Earn up to 50% extra winnings on accumulators with 4+ selections.",
     badge: "BOOST",
-    badgeColor: "bg-green-100 text-green-700",
+    badgeStyle: { background: "oklch(0.65 0.17 155)", color: "white" },
+    accentColor: "oklch(0.65 0.17 155)",
     cta: "Learn More",
   },
   {
@@ -28,7 +33,11 @@ const PROMOTIONS = [
     description:
       "Get 10% cashback on net losses every week, up to 500 credits.",
     badge: "WEEKLY",
-    badgeColor: "bg-purple-100 text-purple-700",
+    badgeStyle: {
+      background: "oklch(0.82 0.18 85)",
+      color: "oklch(0.1 0.02 280)",
+    },
+    accentColor: "oklch(0.82 0.18 85)",
     cta: "Opt In",
   },
   {
@@ -36,7 +45,8 @@ const PROMOTIONS = [
     title: "Live Betting Bonus",
     description: "Double your winnings on selected live events every Saturday.",
     badge: "LIVE",
-    badgeColor: "bg-red-100 text-red-700",
+    badgeStyle: { background: "oklch(0.65 0.22 330)", color: "white" },
+    accentColor: "oklch(0.65 0.22 330)",
     cta: "View Events",
   },
 ];
@@ -50,7 +60,7 @@ export default function Promotions() {
       >
         <h1 className="text-2xl font-bold text-foreground mb-1">Promotions</h1>
         <p className="text-muted-foreground text-sm mb-8">
-          Exclusive offers and bonuses for WinSport members.
+          Exclusive offers and bonuses for 100%Real members.
         </p>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-5">
@@ -60,14 +70,26 @@ export default function Promotions() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
-              className="bg-white rounded-xl card-shadow border border-border p-5 flex flex-col gap-4"
+              className="rounded-xl card-shadow border p-5 flex flex-col gap-4"
+              style={{
+                background: "oklch(0.18 0.07 270)",
+                borderColor: "oklch(0.28 0.06 275)",
+                borderLeft: `4px solid ${promo.accentColor}`,
+              }}
             >
               <div className="flex items-start justify-between">
-                <div className="w-10 h-10 rounded-lg bg-emerald-brand/10 flex items-center justify-center">
-                  <promo.icon className="h-5 w-5 text-emerald-brand" />
+                <div
+                  className="w-10 h-10 rounded-lg flex items-center justify-center"
+                  style={{ background: `${promo.accentColor}22` }}
+                >
+                  <promo.icon
+                    className="h-5 w-5"
+                    style={{ color: promo.accentColor }}
+                  />
                 </div>
                 <Badge
-                  className={`text-[10px] font-bold border-0 ${promo.badgeColor}`}
+                  className="text-[10px] font-bold border-0"
+                  style={promo.badgeStyle}
                 >
                   {promo.badge}
                 </Badge>
@@ -82,7 +104,11 @@ export default function Promotions() {
               </div>
               <Button
                 size="sm"
-                className="self-start bg-emerald-brand hover:bg-emerald-light text-white border-0"
+                className="self-start border-0 font-bold"
+                style={{
+                  background: promo.accentColor,
+                  color: i === 0 || i === 2 ? "oklch(0.1 0.02 280)" : "white",
+                }}
               >
                 {promo.cta}
               </Button>

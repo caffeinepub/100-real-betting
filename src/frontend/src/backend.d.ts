@@ -39,6 +39,9 @@ export interface UserAccount {
     totalLost: number;
     totalWon: number;
 }
+export interface UserProfile {
+    name: string;
+}
 export enum Status {
     closed = "closed",
     upcoming = "upcoming",
@@ -60,15 +63,20 @@ export interface backendInterface {
     assignCallerUserRole(user: Principal, role: UserRole): Promise<void>;
     cancelEvent(eventId: bigint): Promise<void>;
     createEvent(title: string, description: string, sport: string, startTime: Time, selections: Array<Selection>): Promise<bigint>;
-    depositCredits(amount: number): Promise<void>;
+    depositCredits(amount: number): Promise<number>;
     getActiveMarkets(): Promise<Array<Event>>;
+    getCallerUserProfile(): Promise<UserProfile | null>;
     getCallerUserRole(): Promise<UserRole>;
     getEvent(eventId: bigint): Promise<Event>;
     getMyAccountSummary(): Promise<UserAccount>;
     getMyBalance(): Promise<number>;
     getMyBets(): Promise<Array<Bet>>;
+    getUserProfile(user: Principal): Promise<UserProfile | null>;
     isCallerAdmin(): Promise<boolean>;
+    loginAccount(username: string, password: string): Promise<string>;
     placeBet(eventId: bigint, selectionId: bigint, stake: number): Promise<bigint>;
+    registerAccount(username: string, password: string, fullName: string, phone: string, referralCode: string): Promise<string>;
+    saveCallerUserProfile(profile: UserProfile): Promise<void>;
     settleEvent(eventId: bigint, winningSelectionId: bigint): Promise<void>;
     updateEventStatus(eventId: bigint, status: Status): Promise<void>;
 }
