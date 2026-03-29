@@ -1,6 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { motion } from "motion/react";
+import { Search, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface GameCard {
@@ -596,6 +598,22 @@ const GAME_SECTIONS: GameSection[] = [
   },
 ];
 
+const FILTER_PILLS = [
+  { label: "All", value: "ALL" },
+  { label: "JILI", value: "JILI" },
+  { label: "JDB", value: "JDB" },
+  { label: "PG Soft", value: "PG" },
+  { label: "Pragmatic", value: "PP" },
+  { label: "Spadegaming", value: "SPADE" },
+  { label: "CQ9", value: "CQ9" },
+  { label: "Live Casino", value: "LIVE" },
+  { label: "Crash", value: "CRASH" },
+  { label: "Fishing", value: "FISH" },
+  { label: "Sports", value: "SPORT" },
+  { label: "Lottery", value: "LOTTO" },
+  { label: "Poker", value: "POKER" },
+];
+
 function GameCard({ game, index }: { game: GameCard; index: number }) {
   return (
     <motion.div
@@ -671,6 +689,35 @@ function GameSection({
 }
 
 export default function CasinoGames() {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedProvider, setSelectedProvider] = useState("ALL");
+
+  const filteredSections = useMemo(() => {
+    let sections = GAME_SECTIONS;
+
+    if (selectedProvider !== "ALL") {
+      sections = sections.filter((s) => s.provider === selectedProvider);
+    }
+
+    if (searchTerm.trim()) {
+      const q = searchTerm.toLowerCase();
+      sections = sections
+        .map((s) => ({
+          ...s,
+          games: s.games.filter((g) => g.name.toLowerCase().includes(q)),
+        }))
+        .filter((s) => s.games.length > 0);
+    }
+
+    return sections;
+  }, [searchTerm, selectedProvider]);
+
+  const totalGames = filteredSections.reduce(
+    (acc, s) => acc + s.games.length,
+    0,
+  );
+  const isFiltering = searchTerm.trim() !== "" || selectedProvider !== "ALL";
+
   return (
     <div>
       {/* Hero */}
@@ -714,11 +761,115 @@ export default function CasinoGames() {
         </div>
       </div>
 
+      {/* Sticky Search & Filter Bar */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur border-b border-border shadow-md">
+        <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-3 space-y-3">
+          {/* Search Input */}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+            <input
+              data-ocid="casino.search_input"
+              type="text"
+              placeholder="Search games by name..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10 py-2.5 rounded-lg bg-card border border-border text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-emerald-brand/50 focus:border-emerald-brand transition"
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                data-ocid="casino.search_input"
+                onClick={() => setSearchTerm("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+            {FILTER_PILLS.map((pill) => (
+              <button
+                key={pill.value}
+                type="button"
+                data-ocid={`casino.${pill.value.toLowerCase()}.tab`}
+                onClick={() => setSelectedProvider(pill.value)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
+                  selectedProvider === pill.value
+                    ? "bg-emerald-brand text-white border-emerald-brand shadow-sm"
+                    : "bg-card text-muted-foreground border-border hover:border-emerald-brand/50 hover:text-foreground"
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Result Count */}
+          <AnimatePresence>
+            {isFiltering && (
+              <motion.p
+                key="count"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                data-ocid="casino.search.success_state"
+                className="text-xs text-emerald-brand font-medium"
+              >
+                {totalGames} game{totalGames !== 1 ? "s" : ""} found
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
       {/* Game sections */}
       <div className="max-w-[1280px] mx-auto px-4 sm:px-6 py-8 space-y-10">
-        {GAME_SECTIONS.map((section, i) => (
-          <GameSection key={section.title} section={section} sectionIndex={i} />
-        ))}
+        <AnimatePresence mode="wait">
+          {filteredSections.length > 0 ? (
+            filteredSections.map((section, i) => (
+              <GameSection
+                key={section.title}
+                section={section}
+                sectionIndex={i}
+              />
+            ))
+          ) : (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 16 }}
+              transition={{ duration: 0.3 }}
+              data-ocid="casino.search.empty_state"
+              className="flex flex-col items-center justify-center py-24 text-center gap-4"
+            >
+              <div className="w-16 h-16 rounded-full bg-card border border-border flex items-center justify-center">
+                <Search className="w-7 h-7 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-lg font-bold text-foreground">
+                  No games found
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Try a different keyword or select another category.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchTerm("");
+                  setSelectedProvider("ALL");
+                }}
+                className="text-sm text-emerald-brand hover:underline font-medium"
+              >
+                Clear filters
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
