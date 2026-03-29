@@ -2,32 +2,30 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, LogIn, LogOut } from "lucide-react";
-import type { Page } from "../App";
-import { useInternetIdentity } from "../hooks/useInternetIdentity";
-import { useIsAdmin, useMyBalance } from "../hooks/useQueries";
+import type { LocalUser, Page } from "../App";
 
 interface HeaderProps {
   currentPage: Page;
   onNavigate: (page: Page) => void;
   onOpenSignup: () => void;
+  onOpenLogin: () => void;
   onOpenDeposit: () => void;
   onOpenWithdraw: () => void;
+  localUser: LocalUser | null;
+  onLogout: () => void;
 }
 
 export default function Header({
   currentPage,
   onNavigate,
   onOpenSignup,
+  onOpenLogin,
   onOpenDeposit,
   onOpenWithdraw,
+  localUser,
+  onLogout,
 }: HeaderProps) {
-  const { login, clear, loginStatus, identity } = useInternetIdentity();
-  const { data: balance } = useMyBalance();
-  const { data: isAdmin } = useIsAdmin();
-
-  const isLoggedIn = loginStatus === "success" && !!identity;
-  const principal = identity?.getPrincipal().toString();
-  const shortName = principal ? `${principal.slice(0, 5)}...` : "Guest";
+  const isLoggedIn = !!localUser;
 
   const navLinks: { id: Page; label: string }[] = [
     { id: "dashboard", label: "Dashboard" },
@@ -36,11 +34,8 @@ export default function Header({
     { id: "casino", label: "Casino" },
     { id: "promotions", label: "Promotions" },
     { id: "support", label: "Support" },
+    { id: "my-bets", label: "My Bets" },
   ];
-
-  if (isAdmin) {
-    navLinks.push({ id: "admin", label: "Admin" });
-  }
 
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-border shadow-xs">
@@ -86,18 +81,14 @@ export default function Header({
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted">
                 <Avatar className="h-6 w-6">
                   <AvatarFallback className="text-xs bg-emerald-brand text-white">
-                    {shortName[0].toUpperCase()}
+                    {localUser.username[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-xs">
                   <div className="font-semibold text-foreground">
-                    {shortName}
+                    {localUser.username}
                   </div>
-                  <div className="text-muted-foreground">
-                    {balance !== undefined
-                      ? `${balance.toFixed(0)} credits`
-                      : "–"}
-                  </div>
+                  <div className="text-muted-foreground">Welcome back!</div>
                 </div>
               </div>
 
@@ -136,7 +127,8 @@ export default function Header({
                 data-ocid="header.logout.button"
                 size="icon"
                 variant="ghost"
-                onClick={clear}
+                onClick={onLogout}
+                title="Logout"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
@@ -156,11 +148,10 @@ export default function Header({
                 data-ocid="header.login.button"
                 size="sm"
                 className="bg-emerald-brand hover:bg-emerald-light text-white border-0"
-                onClick={login}
-                disabled={loginStatus === "logging-in"}
+                onClick={onOpenLogin}
               >
                 <LogIn className="h-4 w-4 mr-1.5" />
-                {loginStatus === "logging-in" ? "Connecting..." : "Login"}
+                Login
               </Button>
             </>
           )}

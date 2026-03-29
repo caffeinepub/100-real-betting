@@ -2,6 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { useState } from "react";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
+import LoginModal from "./components/LoginModal";
 import PaymentModal from "./components/PaymentModal";
 import SignupModal from "./components/SignupModal";
 import { BetSlipProvider } from "./context/BetSlipContext";
@@ -22,13 +23,19 @@ export type Page =
   | "admin"
   | "casino";
 
+export interface LocalUser {
+  username: string;
+}
+
 export default function App() {
   const [page, setPage] = useState<Page>("dashboard");
   const [signupOpen, setSignupOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [paymentTab, setPaymentTab] = useState<"deposit" | "withdraw">(
     "deposit",
   );
+  const [localUser, setLocalUser] = useState<LocalUser | null>(null);
 
   const openDeposit = () => {
     setPaymentTab("deposit");
@@ -37,6 +44,15 @@ export default function App() {
   const openWithdraw = () => {
     setPaymentTab("withdraw");
     setPaymentOpen(true);
+  };
+
+  const handleLogin = (username: string) => {
+    setLocalUser({ username });
+    setLoginOpen(false);
+  };
+
+  const handleLogout = () => {
+    setLocalUser(null);
   };
 
   const renderPage = () => {
@@ -67,14 +83,26 @@ export default function App() {
           currentPage={page}
           onNavigate={setPage}
           onOpenSignup={() => setSignupOpen(true)}
+          onOpenLogin={() => setLoginOpen(true)}
           onOpenDeposit={openDeposit}
           onOpenWithdraw={openWithdraw}
+          localUser={localUser}
+          onLogout={handleLogout}
         />
         <main className="flex-1">{renderPage()}</main>
         <Footer />
       </div>
       <Toaster position="top-right" richColors />
       <SignupModal open={signupOpen} onClose={() => setSignupOpen(false)} />
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onOpenSignup={() => {
+          setLoginOpen(false);
+          setSignupOpen(true);
+        }}
+        onLoginSuccess={handleLogin}
+      />
       <PaymentModal
         open={paymentOpen}
         onClose={() => setPaymentOpen(false)}
