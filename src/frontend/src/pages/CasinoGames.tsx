@@ -47,6 +47,30 @@ const GAME_SECTIONS: GameSection[] = [
         provider: "JILI",
         providerColor: "bg-red-500",
       },
+      {
+        name: "Crazy777",
+        image: "/assets/generated/jili-slots.dim_300x200.jpg",
+        provider: "JILI",
+        providerColor: "bg-red-500",
+      },
+      {
+        name: "Mega Ace",
+        image: "/assets/generated/jili-slots.dim_300x200.jpg",
+        provider: "JILI",
+        providerColor: "bg-red-500",
+      },
+      {
+        name: "Book of Gold",
+        image: "/assets/generated/jili-slots.dim_300x200.jpg",
+        provider: "JILI",
+        providerColor: "bg-red-500",
+      },
+      {
+        name: "Wild Bounty",
+        image: "/assets/generated/jili-slots.dim_300x200.jpg",
+        provider: "JILI",
+        providerColor: "bg-red-500",
+      },
     ],
   },
   {
@@ -77,6 +101,226 @@ const GAME_SECTIONS: GameSection[] = [
         image: "/assets/generated/jdb-slots.dim_300x200.jpg",
         provider: "JDB",
         providerColor: "bg-blue-600",
+      },
+      {
+        name: "Winning Mask",
+        image: "/assets/generated/jdb-slots.dim_300x200.jpg",
+        provider: "JDB",
+        providerColor: "bg-blue-600",
+      },
+      {
+        name: "Dragon King",
+        image: "/assets/generated/jdb-slots.dim_300x200.jpg",
+        provider: "JDB",
+        providerColor: "bg-blue-600",
+      },
+      {
+        name: "Lucky Baller",
+        image: "/assets/generated/jdb-slots.dim_300x200.jpg",
+        provider: "JDB",
+        providerColor: "bg-blue-600",
+      },
+      {
+        name: "Sugar Rush",
+        image: "/assets/generated/jdb-slots.dim_300x200.jpg",
+        provider: "JDB",
+        providerColor: "bg-blue-600",
+      },
+    ],
+  },
+  {
+    title: "PG Soft",
+    provider: "PG",
+    badgeColor: "bg-orange-500 text-white",
+    games: [
+      {
+        name: "Mahjong Ways",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Mahjong Ways 2",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Fortune Mouse",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Leprechaun Riches",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Candy Bonanza",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Wild Fireworks",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Dragon Hatch",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+      {
+        name: "Gem Saviour",
+        image: "/assets/generated/pgsoft-slots.dim_300x200.jpg",
+        provider: "PG",
+        providerColor: "bg-orange-500",
+      },
+    ],
+  },
+  {
+    title: "Pragmatic Play",
+    provider: "PP",
+    badgeColor: "bg-rose-600 text-white",
+    games: [
+      {
+        name: "Gates of Olympus",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Sweet Bonanza",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Starlight Princess",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Big Bass Bonanza",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Wolf Gold",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Aztec Gems",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Fruit Party",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+      {
+        name: "Eye of Cleopatra",
+        image: "/assets/generated/pragmatic-slots.dim_300x200.jpg",
+        provider: "PP",
+        providerColor: "bg-rose-600",
+      },
+    ],
+  },
+  {
+    title: "Spadegaming",
+    provider: "SPADE",
+    badgeColor: "bg-violet-600 text-white",
+    games: [
+      {
+        name: "Gem & Stars",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+      {
+        name: "Midas Touch",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+      {
+        name: "Lucky Koi",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+      {
+        name: "Triple Pandas",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+      {
+        name: "Dragon Gold",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+      {
+        name: "Ninja vs Samurai",
+        image: "/assets/generated/spade-slots.dim_300x200.jpg",
+        provider: "SPADE",
+        providerColor: "bg-violet-600",
+      },
+    ],
+  },
+  {
+    title: "CQ9 Gaming",
+    provider: "CQ9",
+    badgeColor: "bg-amber-600 text-white",
+    games: [
+      {
+        name: "Thor X",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
+      },
+      {
+        name: "Money Tree",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
+      },
+      {
+        name: "Jumping Cats",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
+      },
+      {
+        name: "Three Little Pigs",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
+      },
+      {
+        name: "Lucky Strike",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
+      },
+      {
+        name: "Golden Dragon",
+        image: "/assets/generated/cq9-slots.dim_300x200.jpg",
+        provider: "CQ9",
+        providerColor: "bg-amber-600",
       },
     ],
   },
@@ -109,6 +353,30 @@ const GAME_SECTIONS: GameSection[] = [
         provider: "LIVE",
         providerColor: "bg-yellow-500",
       },
+      {
+        name: "Sic Bo",
+        image: "/assets/generated/live-casino.dim_300x200.jpg",
+        provider: "LIVE",
+        providerColor: "bg-yellow-500",
+      },
+      {
+        name: "Andar Bahar",
+        image: "/assets/generated/live-casino.dim_300x200.jpg",
+        provider: "LIVE",
+        providerColor: "bg-yellow-500",
+      },
+      {
+        name: "Teen Patti",
+        image: "/assets/generated/live-casino.dim_300x200.jpg",
+        provider: "LIVE",
+        providerColor: "bg-yellow-500",
+      },
+      {
+        name: "Casino Hold'em",
+        image: "/assets/generated/live-casino.dim_300x200.jpg",
+        provider: "LIVE",
+        providerColor: "bg-yellow-500",
+      },
     ],
   },
   {
@@ -130,6 +398,24 @@ const GAME_SECTIONS: GameSection[] = [
       },
       {
         name: "Rocket Launch",
+        image: "/assets/generated/crash-game.dim_300x200.jpg",
+        provider: "CRASH",
+        providerColor: "bg-purple-600",
+      },
+      {
+        name: "JetX",
+        image: "/assets/generated/crash-game.dim_300x200.jpg",
+        provider: "CRASH",
+        providerColor: "bg-purple-600",
+      },
+      {
+        name: "Mines",
+        image: "/assets/generated/crash-game.dim_300x200.jpg",
+        provider: "CRASH",
+        providerColor: "bg-purple-600",
+      },
+      {
+        name: "Plinko",
         image: "/assets/generated/crash-game.dim_300x200.jpg",
         provider: "CRASH",
         providerColor: "bg-purple-600",
@@ -159,30 +445,152 @@ const GAME_SECTIONS: GameSection[] = [
         provider: "FISH",
         providerColor: "bg-teal-500",
       },
+      {
+        name: "Mega Fishing",
+        image: "/assets/generated/fishing-game.dim_300x200.jpg",
+        provider: "FISH",
+        providerColor: "bg-teal-500",
+      },
+      {
+        name: "All Star Fishing",
+        image: "/assets/generated/fishing-game.dim_300x200.jpg",
+        provider: "FISH",
+        providerColor: "bg-teal-500",
+      },
+      {
+        name: "Royal Fishing",
+        image: "/assets/generated/fishing-game.dim_300x200.jpg",
+        provider: "FISH",
+        providerColor: "bg-teal-500",
+      },
+    ],
+  },
+  {
+    title: "Sports Betting",
+    provider: "SPORT",
+    badgeColor: "bg-green-600 text-white",
+    games: [
+      {
+        name: "Football (Soccer)",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+      {
+        name: "Cricket",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+      {
+        name: "Basketball",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+      {
+        name: "Tennis",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+      {
+        name: "Kabaddi",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+      {
+        name: "Horse Racing",
+        image: "/assets/generated/sports-betting.dim_300x200.jpg",
+        provider: "SPORT",
+        providerColor: "bg-green-600",
+      },
+    ],
+  },
+  {
+    title: "Lottery & Keno",
+    provider: "LOTTO",
+    badgeColor: "bg-pink-600 text-white",
+    games: [
+      {
+        name: "Keno Deluxe",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
+      {
+        name: "Lucky Numbers",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
+      {
+        name: "Bingo Blitz",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
+      {
+        name: "Powerball",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
+      {
+        name: "Pick 3",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
+      {
+        name: "Scratch Cards",
+        image: "/assets/generated/lottery-game.dim_300x200.jpg",
+        provider: "LOTTO",
+        providerColor: "bg-pink-600",
+      },
     ],
   },
   {
     title: "Card & Poker",
-    provider: "CARDS",
-    badgeColor: "bg-gray-800 text-white",
+    provider: "POKER",
+    badgeColor: "bg-slate-600 text-white",
     games: [
       {
         name: "Texas Hold'em",
-        image: "/assets/generated/poker-game.dim_300x200.jpg",
-        provider: "CARDS",
-        providerColor: "bg-gray-800",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
       },
       {
-        name: "Teen Patti",
-        image: "/assets/generated/poker-game.dim_300x200.jpg",
-        provider: "CARDS",
-        providerColor: "bg-gray-800",
+        name: "Three Card Poker",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
       },
       {
-        name: "Andar Bahar",
-        image: "/assets/generated/poker-game.dim_300x200.jpg",
-        provider: "CARDS",
-        providerColor: "bg-gray-800",
+        name: "Pai Gow",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
+      },
+      {
+        name: "Caribbean Stud",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
+      },
+      {
+        name: "Video Poker",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
+      },
+      {
+        name: "Hi-Lo",
+        image: "/assets/generated/card-poker.dim_300x200.jpg",
+        provider: "POKER",
+        providerColor: "bg-slate-600",
       },
     ],
   },
@@ -191,12 +599,11 @@ const GAME_SECTIONS: GameSection[] = [
 function GameCard({ game, index }: { game: GameCard; index: number }) {
   return (
     <motion.div
-      data-ocid={`casino.game.item.${index}`}
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, scale: 0.95 }}
+      whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.3, delay: index * 0.05 }}
-      className="bg-white rounded-xl overflow-hidden border border-border card-shadow group cursor-pointer hover:shadow-md transition-shadow"
+      className="group rounded-xl overflow-hidden bg-card border border-border hover:border-emerald-brand/50 hover:shadow-lg transition-all cursor-pointer"
     >
       <div className="relative overflow-hidden">
         <img
@@ -236,7 +643,7 @@ function GameSection({
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: sectionIndex * 0.1 }}
+      transition={{ duration: 0.4, delay: sectionIndex * 0.05 }}
       className="space-y-4"
     >
       <div className="flex items-center justify-between">
@@ -278,19 +685,30 @@ export default function CasinoGames() {
               Casino Games
             </h1>
             <p className="text-white/70 text-lg mt-1">
-              Play JILI, JDB, Live Casino & More
+              JILI · JDB · PG Soft · Pragmatic · Spadegaming · CQ9 & More
             </p>
             <div className="flex flex-wrap gap-2 mt-4">
-              {["JILI", "JDB", "Live Casino", "Crash", "Fishing", "Poker"].map(
-                (tag) => (
-                  <span
-                    key={tag}
-                    className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white/80 border border-white/20"
-                  >
-                    {tag}
-                  </span>
-                ),
-              )}
+              {[
+                "JILI",
+                "JDB",
+                "PG Soft",
+                "Pragmatic",
+                "Spadegaming",
+                "CQ9",
+                "Live Casino",
+                "Crash",
+                "Fishing",
+                "Sports",
+                "Lottery",
+                "Poker",
+              ].map((tag) => (
+                <span
+                  key={tag}
+                  className="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white/80 border border-white/20"
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
           </motion.div>
         </div>
