@@ -240,9 +240,55 @@ export default function App() {
   }
 
   function handleUpdateRequest(id: string, status: "approved" | "rejected") {
+    // Find the request first so we can update balances
+    const req = transactionRequests.find((r) => r.id === id);
+
     setTransactionRequests((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status } : r)),
     );
+
+    if (req && status === "approved") {
+      const delta = req.type === "deposit" ? req.amount : -req.amount;
+
+      // Update balance in registeredUsers
+      setRegisteredUsers((prev) =>
+        prev.map((u) =>
+          u.username === req.username
+            ? { ...u, balance: Math.max(0, (u.balance ?? 0) + delta) }
+            : u,
+        ),
+      );
+
+      // Update logged-in user balance if it's their transaction
+      setUser((prev) => {
+        if (!prev || prev.username !== req.username) return prev;
+        return { ...prev, balance: Math.max(0, (prev.balance ?? 0) + delta) };
+      });
+
+      // Add notification for the user (visible when they next check)
+      addNotification({
+        type: req.type === "deposit" ? "deposit" : "withdrawal",
+        title:
+          req.type === "deposit"
+            ? "✅ Deposit Approved"
+            : "💸 Withdrawal Approved",
+        detail:
+          req.type === "deposit"
+            ? `Your deposit of PKR ${req.amount.toLocaleString()} via ${req.method} has been approved and credited to your account.`
+            : `Your withdrawal of PKR ${req.amount.toLocaleString()} via ${req.method} has been approved and is being processed.`,
+        icon: req.type === "deposit" ? "✅" : "💸",
+      });
+    } else if (req && status === "rejected") {
+      addNotification({
+        type: req.type === "deposit" ? "deposit" : "withdrawal",
+        title:
+          req.type === "deposit"
+            ? "❌ Deposit Rejected"
+            : "❌ Withdrawal Rejected",
+        detail: `Your ${req.type} request of PKR ${req.amount.toLocaleString()} via ${req.method} was rejected. Please contact support if you need help.`,
+        icon: "❌",
+      });
+    }
   }
 
   return (

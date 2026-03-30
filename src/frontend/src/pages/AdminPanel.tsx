@@ -257,6 +257,9 @@ export function AdminPanel({
                           Joined
                         </TableHead>
                         <TableHead style={{ color: "oklch(0.60 0.08 285)" }}>
+                          Balance (PKR)
+                        </TableHead>
+                        <TableHead style={{ color: "oklch(0.60 0.08 285)" }}>
                           Status
                         </TableHead>
                         <TableHead style={{ color: "oklch(0.60 0.08 285)" }}>
@@ -339,6 +342,14 @@ export function AdminPanel({
                               className="text-sm"
                             >
                               {new Date().toLocaleDateString("en-PK")}
+                            </TableCell>
+                            <TableCell>
+                              <span
+                                className="font-black text-sm"
+                                style={{ color: "oklch(0.85 0.18 50)" }}
+                              >
+                                PKR {(member.balance ?? 0).toLocaleString()}
+                              </span>
                             </TableCell>
                             <TableCell>
                               <Badge
