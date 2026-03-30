@@ -1,0 +1,13 @@
+{
+  "name": "100%Real Casino",
+  "short_name": "100%Real",
+  "description": "Pakistan's #1 Online Casino",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0820",
+  "theme_color": "#0d0820",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/favicon.ico", "sizes": "64x64", "type": "image/x-icon" }
+  ]
+}

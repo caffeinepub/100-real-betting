@@ -1,0 +1,195 @@
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Copy, Gift, Users } from "lucide-react";
+import { toast } from "sonner";
+
+interface ReferralModalProps {
+  open: boolean;
+  onClose: () => void;
+  username: string;
+  referralCount: number;
+}
+
+export function ReferralModal({
+  open,
+  onClose,
+  username,
+  referralCount,
+}: ReferralModalProps) {
+  const referralLink = `https://100real.app/ref/${username}`;
+
+  function handleCopy() {
+    navigator.clipboard
+      .writeText(referralLink)
+      .then(() => toast.success("Referral link copied! 🎉"))
+      .catch(() => toast.error("Could not copy link"));
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent
+        className="max-w-md w-full border border-border"
+        style={{
+          background: "oklch(0.15 0.09 285)",
+          boxShadow: "0 0 60px oklch(0.80 0.18 130 / 0.25)",
+        }}
+        data-ocid="referral.modal"
+      >
+        <DialogHeader>
+          <DialogTitle
+            className="font-display text-2xl text-center flex items-center justify-center gap-2"
+            style={{ color: "oklch(0.85 0.18 50)" }}
+          >
+            <Gift size={22} />
+            Refer &amp; Earn
+          </DialogTitle>
+          <p
+            className="text-center text-sm"
+            style={{ color: "oklch(0.65 0.06 285)" }}
+          >
+            Share your link and your friend gets a{" "}
+            <span
+              className="font-black"
+              style={{ color: "oklch(0.80 0.18 130)" }}
+            >
+              PKR 200 welcome bonus
+            </span>{" "}
+            instantly when they join!
+          </p>
+        </DialogHeader>
+
+        {/* Referral Count */}
+        <div
+          className="rounded-xl p-4 flex items-center gap-4 border"
+          style={{
+            background: "oklch(0.80 0.18 130 / 0.08)",
+            borderColor: "oklch(0.80 0.18 130 / 0.25)",
+          }}
+        >
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: "oklch(0.80 0.18 130 / 0.2)" }}
+          >
+            <Users size={22} style={{ color: "oklch(0.80 0.18 130)" }} />
+          </div>
+          <div>
+            <p
+              className="text-3xl font-black"
+              style={{ color: "oklch(0.80 0.18 130)" }}
+              data-ocid="referral.count.panel"
+            >
+              {referralCount}
+            </p>
+            <p
+              className="text-sm font-semibold"
+              style={{ color: "oklch(0.60 0.05 285)" }}
+            >
+              {referralCount === 1 ? "Friend Referred" : "Friends Referred"}
+            </p>
+          </div>
+          <div className="ml-auto text-right">
+            <p
+              className="text-xl font-black"
+              style={{ color: "oklch(0.85 0.18 50)" }}
+            >
+              PKR {(referralCount * 200).toLocaleString()}
+            </p>
+            <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
+              Bonus given to friends
+            </p>
+          </div>
+        </div>
+
+        {/* Referral Link */}
+        <div className="space-y-2">
+          <p
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: "oklch(0.60 0.06 285)" }}
+          >
+            Your Referral Link
+          </p>
+          <div
+            className="flex items-center gap-2 rounded-lg px-3 py-2 border"
+            style={{
+              background: "oklch(0.11 0.07 285)",
+              borderColor: "oklch(0.25 0.08 285)",
+            }}
+          >
+            <span
+              className="flex-1 text-sm font-mono truncate"
+              style={{ color: "oklch(0.75 0.2 195)" }}
+            >
+              {referralLink}
+            </span>
+            <Button
+              type="button"
+              size="sm"
+              onClick={handleCopy}
+              data-ocid="referral.copy.button"
+              className="flex-shrink-0 h-8 px-3 font-black text-black text-xs flex items-center gap-1.5"
+              style={{ background: "oklch(0.85 0.18 50)" }}
+            >
+              <Copy size={13} />
+              Copy
+            </Button>
+          </div>
+        </div>
+
+        {/* How it works */}
+        <div
+          className="rounded-xl p-4 space-y-2 border"
+          style={{
+            background: "oklch(0.75 0.25 335 / 0.06)",
+            borderColor: "oklch(0.75 0.25 335 / 0.2)",
+          }}
+        >
+          <p
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: "oklch(0.75 0.25 335)" }}
+          >
+            How it works
+          </p>
+          {[
+            "Share your referral link or username with a friend",
+            "Friend registers using your link or referral code",
+            "New user gets PKR 200 bonus credited instantly!",
+          ].map((step, i) => (
+            <div key={step} className="flex items-start gap-2">
+              <span
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black flex-shrink-0 mt-0.5"
+                style={{
+                  background: "oklch(0.75 0.25 335 / 0.25)",
+                  color: "oklch(0.75 0.25 335)",
+                }}
+              >
+                {i + 1}
+              </span>
+              <p className="text-sm" style={{ color: "oklch(0.72 0.04 285)" }}>
+                {step}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <Button
+          type="button"
+          onClick={handleCopy}
+          data-ocid="referral.primary_button"
+          className="w-full font-black text-black h-11 text-base"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.80 0.22 60))",
+          }}
+        >
+          <Copy size={16} className="mr-2" />
+          Copy My Referral Link
+        </Button>
+      </DialogContent>
+    </Dialog>
+  );
+}
