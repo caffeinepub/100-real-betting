@@ -19,6 +19,7 @@ interface RegisterModalProps {
   ) => void;
   onSwitchToLogin: () => void;
   existingUsers: string[];
+  initialReferralCode?: string;
 }
 
 export function RegisterModal({
@@ -27,13 +28,14 @@ export function RegisterModal({
   onRegister,
   onSwitchToLogin,
   existingUsers,
+  initialReferralCode,
 }: RegisterModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [referral, setReferral] = useState("");
+  const [referral, setReferral] = useState(initialReferralCode ?? "");
   const [loading, setLoading] = useState(false);
 
   function reset() {
@@ -42,7 +44,7 @@ export function RegisterModal({
     setUsername("");
     setPassword("");
     setConfirm("");
-    setReferral("");
+    setReferral(initialReferralCode ?? "");
   }
 
   function handleOpenChange(val: boolean) {
@@ -201,6 +203,17 @@ export function RegisterModal({
               className="text-muted-foreground font-semibold text-sm"
             >
               Referral Code <span className="text-xs">(optional)</span>
+              {initialReferralCode && (
+                <span
+                  className="ml-2 text-xs font-bold px-1.5 py-0.5 rounded"
+                  style={{
+                    background: "oklch(0.80 0.18 130 / 0.2)",
+                    color: "oklch(0.80 0.18 130)",
+                  }}
+                >
+                  ✓ Auto-filled from referral link
+                </span>
+              )}
             </Label>
             <Input
               id="reg-referral"

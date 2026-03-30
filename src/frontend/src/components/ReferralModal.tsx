@@ -21,7 +21,7 @@ export function ReferralModal({
   username,
   referralCount,
 }: ReferralModalProps) {
-  const referralLink = `https://100real.app/ref/${username}`;
+  const referralLink = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(username)}`;
 
   function handleCopy() {
     navigator.clipboard
@@ -155,8 +155,8 @@ export function ReferralModal({
             How it works
           </p>
           {[
-            "Share your referral link or username with a friend",
-            "Friend registers using your link or referral code",
+            "Share your referral link with a friend",
+            "Friend clicks the link and the sign-up form opens automatically with your code filled in",
             "New user gets PKR 200 bonus credited instantly!",
           ].map((step, i) => (
             <div key={step} className="flex items-start gap-2">

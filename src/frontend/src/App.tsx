@@ -16,6 +16,7 @@ import { CasinoGamesPage } from "./pages/CasinoGamesPage";
 import { CasinoLobby } from "./pages/CasinoLobby";
 import { PromotionsPage } from "./pages/PromotionsPage";
 import { VipPage } from "./pages/VipPage";
+import { getUrlParameter } from "./utils/urlParams";
 
 export type Page =
   | "lobby"
@@ -119,7 +120,15 @@ const REFERRAL_BONUS_PKR = 200;
 
 export default function App() {
   const [page, setPage] = useState<Page>("lobby");
-  const [modal, setModal] = useState<ModalState>("none");
+
+  // Read ?ref= from URL on first mount
+  const [initialReferralCode] = useState<string>(
+    () => getUrlParameter("ref") ?? "",
+  );
+  const [modal, setModal] = useState<ModalState>(() =>
+    getUrlParameter("ref") ? "register" : "none",
+  );
+
   const [user, setUser] = useState<User | null>(null);
   const [notifications, setNotifications] = useState<Notification[]>(
     DEFAULT_NOTIFICATIONS,
@@ -240,7 +249,6 @@ export default function App() {
   }
 
   function handleUpdateRequest(id: string, status: "approved" | "rejected") {
-    // Find the request first so we can update balances
     const req = transactionRequests.find((r) => r.id === id);
 
     setTransactionRequests((prev) =>
@@ -250,7 +258,6 @@ export default function App() {
     if (req && status === "approved") {
       const delta = req.type === "deposit" ? req.amount : -req.amount;
 
-      // Update balance in registeredUsers
       setRegisteredUsers((prev) =>
         prev.map((u) =>
           u.username === req.username
@@ -259,13 +266,11 @@ export default function App() {
         ),
       );
 
-      // Update logged-in user balance if it's their transaction
       setUser((prev) => {
         if (!prev || prev.username !== req.username) return prev;
         return { ...prev, balance: Math.max(0, (prev.balance ?? 0) + delta) };
       });
 
-      // Add notification for the user (visible when they next check)
       addNotification({
         type: req.type === "deposit" ? "deposit" : "withdrawal",
         title:
@@ -342,6 +347,7 @@ export default function App() {
         onRegister={handleRegister}
         onSwitchToLogin={() => setModal("login")}
         existingUsers={registeredUsers.map((u) => u.username)}
+        initialReferralCode={initialReferralCode}
       />
 
       <DepositModal
