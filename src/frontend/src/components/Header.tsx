@@ -12,6 +12,7 @@ import type { Page, User } from "../App";
 interface HeaderProps {
   user: User | null;
   unreadCount: number;
+  unreadPromoCount: number;
   onOpenLogin: () => void;
   onOpenRegister: () => void;
   onOpenDeposit: () => void;
@@ -35,6 +36,7 @@ const NAV_ITEMS: { label: string; page: Page }[] = [
 export function Header({
   user,
   unreadCount,
+  unreadPromoCount,
   onOpenLogin,
   onOpenRegister,
   onOpenDeposit,
@@ -67,21 +69,38 @@ export function Header({
           </button>
 
           <nav className="hidden md:flex items-center gap-1">
-            {NAV_ITEMS.map((item) => (
-              <button
-                type="button"
-                key={item.page}
-                onClick={() => onNavigate(item.page)}
-                data-ocid={`nav.${item.page}.link`}
-                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all font-body ${
-                  currentPage === item.page
-                    ? "bg-pink-accent text-black"
-                    : "text-foreground hover:text-gold hover:bg-white/5"
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isActive = currentPage === item.page;
+              const showPromoBadge =
+                item.page === "promotions" && unreadPromoCount > 0 && !isActive;
+              return (
+                <button
+                  type="button"
+                  key={item.page}
+                  onClick={() => onNavigate(item.page)}
+                  data-ocid={`nav.${item.page}.link`}
+                  className={`relative px-4 py-2 rounded-lg text-sm font-semibold transition-all font-body ${
+                    isActive
+                      ? "bg-pink-accent text-black"
+                      : "text-foreground hover:text-gold hover:bg-white/5"
+                  }`}
+                >
+                  {item.label}
+                  {showPromoBadge && (
+                    <span
+                      className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 rounded-full text-[9px] font-black flex items-center justify-center"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.78 0.22 60))",
+                        color: "#000",
+                      }}
+                    >
+                      {unreadPromoCount}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
             {user?.isAdmin && (
               <button
                 type="button"
@@ -229,21 +248,38 @@ export function Header({
 
         {/* Mobile nav */}
         <div className="flex md:hidden items-center gap-1 pb-2 overflow-x-auto scrollbar-thin">
-          {NAV_ITEMS.map((item) => (
-            <button
-              type="button"
-              key={item.page}
-              onClick={() => onNavigate(item.page)}
-              data-ocid={`mobile.nav.${item.page}.link`}
-              className={`px-3 py-1.5 rounded-md text-xs font-bold whitespace-nowrap transition-all ${
-                currentPage === item.page
-                  ? "bg-pink-accent text-black"
-                  : "text-foreground hover:text-gold"
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const isActive = currentPage === item.page;
+            const showPromoBadge =
+              item.page === "promotions" && unreadPromoCount > 0 && !isActive;
+            return (
+              <button
+                type="button"
+                key={item.page}
+                onClick={() => onNavigate(item.page)}
+                data-ocid={`mobile.nav.${item.page}.link`}
+                className={`relative px-3 py-1.5 rounded-md text-xs font-bold whitespace-nowrap transition-all ${
+                  isActive
+                    ? "bg-pink-accent text-black"
+                    : "text-foreground hover:text-gold"
+                }`}
+              >
+                {item.label}
+                {showPromoBadge && (
+                  <span
+                    className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 rounded-full text-[8px] font-black flex items-center justify-center"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.78 0.22 60))",
+                      color: "#000",
+                    }}
+                  >
+                    {unreadPromoCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
           {user?.isAdmin && (
             <button
               type="button"

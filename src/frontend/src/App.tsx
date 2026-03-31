@@ -119,6 +119,9 @@ export default function App() {
   const notifications =
     user && !user.isAdmin ? (userNotifications[user.username] ?? []) : [];
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadPromoCount = notifications.filter(
+    (n) => !n.read && n.type === "promo",
+  ).length;
 
   const referralCount = user
     ? registeredUsers.filter((u) => u.referralCode === user.username).length
@@ -162,6 +165,7 @@ export default function App() {
         icon: "📢",
         title,
         detail,
+        link: "promotions",
       });
     }
   }
@@ -206,6 +210,7 @@ export default function App() {
           title: "🎁 Referral Bonus Credited!",
           detail: `You received PKR ${REFERRAL_BONUS_PKR} referral bonus for joining with a referral code. Start playing now!`,
           icon: "🎁",
+          link: "promotions",
         });
       }, 600);
     }
@@ -316,6 +321,7 @@ export default function App() {
       <Header
         user={user}
         unreadCount={unreadCount}
+        unreadPromoCount={unreadPromoCount}
         onOpenLogin={() => setModal("login")}
         onOpenRegister={() => setModal("register")}
         onOpenDeposit={() => setModal("deposit")}
