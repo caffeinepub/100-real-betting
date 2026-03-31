@@ -66,57 +66,33 @@ export type TransactionRequest = {
   accountNumber?: string;
 };
 
-const DEFAULT_NOTIFICATIONS: Notification[] = [
-  {
-    id: "1",
-    type: "deposit",
-    title: "Deposit Confirmed",
-    detail:
-      "Your deposit of PKR 1,000 via JazzCash has been confirmed and credited to your account.",
-    icon: "✅",
-    read: false,
-  },
-  {
-    id: "2",
-    type: "withdrawal",
-    title: "Withdrawal Processed",
-    detail:
-      "Your withdrawal of PKR 2,500 has been processed. Funds will arrive in 2–4 hours via Easypaisa.",
-    icon: "💸",
-    read: false,
-  },
-  {
-    id: "3",
-    type: "promo",
-    title: "🔥 50% Bonus on Next Deposit!",
-    detail:
-      "Deposit now and get a 50% bonus up to PKR 5,000! Limited time offer. Click to view Promotions.",
-    icon: "🎁",
-    read: false,
-    link: "promotions",
-  },
-  {
-    id: "4",
-    type: "promo",
-    title: "👑 VIP Double XP Weekend!",
-    detail:
-      "This weekend only — earn double XP on all games! Level up faster. Check VIP rewards now.",
-    icon: "⚡",
-    read: false,
-    link: "vip",
-  },
-  {
-    id: "5",
-    type: "system",
-    title: "Welcome to 100%Real!",
-    detail:
-      "Welcome! Start playing now with 12 top game providers. Deposit with JazzCash or Easypaisa instantly.",
-    icon: "🎰",
-    read: false,
-  },
-];
-
 const REFERRAL_BONUS_PKR = 200;
+
+function useLocalState<T>(key: string, defaultValue: T) {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const stored = localStorage.getItem(key);
+      return stored ? (JSON.parse(stored) as T) : defaultValue;
+    } catch {
+      return defaultValue;
+    }
+  });
+
+  function setAndPersist(updater: T | ((prev: T) => T)) {
+    setState((prev) => {
+      const next =
+        typeof updater === "function"
+          ? (updater as (prev: T) => T)(prev)
+          : updater;
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }
+
+  return [state, setAndPersist] as const;
+}
 
 export default function App() {
   const [page, setPage] = useState<Page>("lobby");
@@ -129,17 +105,19 @@ export default function App() {
     getUrlParameter("ref") ? "register" : "none",
   );
 
-  const [user, setUser] = useState<User | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>(
-    DEFAULT_NOTIFICATIONS,
-  );
-  const [registeredUsers, setRegisteredUsers] = useState<
+  const [user, setUser] = useLocalState<User | null>("app_current_user", null);
+  const [userNotifications, setUserNotifications] = useLocalState<
+    Record<string, Notification[]>
+  >("app_notifications", {});
+  const [registeredUsers, setRegisteredUsers] = useLocalState<
     Array<User & { password: string; referralCode?: string; balance: number }>
-  >([]);
-  const [transactionRequests, setTransactionRequests] = useState<
+  >("app_registered_users", []);
+  const [transactionRequests, setTransactionRequests] = useLocalState<
     TransactionRequest[]
-  >([]);
+  >("app_transactions", []);
 
+  const notifications =
+    user && !user.isAdmin ? (userNotifications[user.username] ?? []) : [];
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const referralCount = user
@@ -147,18 +125,45 @@ export default function App() {
     : 0;
 
   function markRead(id: string) {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n)),
-    );
+    if (!user) return;
+    setUserNotifications((prev) => ({
+      ...prev,
+      [user.username]: (prev[user.username] ?? []).map((n) =>
+        n.id === id ? { ...n, read: true } : n,
+      ),
+    }));
   }
 
-  function addNotification(notification: Omit<Notification, "id" | "read">) {
+  function addNotificationForUser(
+    username: string,
+    notification: Omit<Notification, "id" | "read">,
+  ) {
     const newNotif: Notification = {
       ...notification,
       id: `notif-${Date.now()}`,
       read: false,
     };
-    setNotifications((prev) => [newNotif, ...prev]);
+    setUserNotifications((prev) => ({
+      ...prev,
+      [username]: [newNotif, ...(prev[username] ?? [])],
+    }));
+  }
+
+  function handleBroadcastNotification(
+    targets: string[] | "all",
+    title: string,
+    detail: string,
+  ) {
+    const recipients =
+      targets === "all" ? registeredUsers.map((u) => u.username) : targets;
+    for (const username of recipients) {
+      addNotificationForUser(username, {
+        type: "promo",
+        icon: "📢",
+        title,
+        detail,
+      });
+    }
   }
 
   function handleRegister(
@@ -173,13 +178,22 @@ export default function App() {
       ...prev,
       { ...data, balance: startingBalance },
     ]);
-    setUser({
+    const newUser: User = {
       username: data.username,
       name: data.name,
       phone: data.phone,
       balance: startingBalance,
-    });
+    };
+    setUser(newUser);
     setModal("none");
+
+    addNotificationForUser(data.username, {
+      type: "system",
+      title: "Welcome to 100%Real!",
+      detail:
+        "Welcome! Start playing now with 12 top game providers. Deposit with JazzCash or Easypaisa instantly.",
+      icon: "🎰",
+    });
 
     if (isValidReferral) {
       setTimeout(() => {
@@ -187,7 +201,7 @@ export default function App() {
           `🎁 PKR ${REFERRAL_BONUS_PKR} referral bonus credited to your account!`,
           { duration: 5000 },
         );
-        addNotification({
+        addNotificationForUser(data.username, {
           type: "promo",
           title: "🎁 Referral Bonus Credited!",
           detail: `You received PKR ${REFERRAL_BONUS_PKR} referral bonus for joining with a referral code. Start playing now!`,
@@ -271,7 +285,7 @@ export default function App() {
         return { ...prev, balance: Math.max(0, (prev.balance ?? 0) + delta) };
       });
 
-      addNotification({
+      addNotificationForUser(req.username, {
         type: req.type === "deposit" ? "deposit" : "withdrawal",
         title:
           req.type === "deposit"
@@ -284,7 +298,7 @@ export default function App() {
         icon: req.type === "deposit" ? "✅" : "💸",
       });
     } else if (req && status === "rejected") {
-      addNotification({
+      addNotificationForUser(req.username, {
         type: req.type === "deposit" ? "deposit" : "withdrawal",
         title:
           req.type === "deposit"
@@ -328,6 +342,7 @@ export default function App() {
             members={registeredUsers}
             transactionRequests={transactionRequests}
             onUpdateRequest={handleUpdateRequest}
+            onBroadcastNotification={handleBroadcastNotification}
           />
         )}
       </main>

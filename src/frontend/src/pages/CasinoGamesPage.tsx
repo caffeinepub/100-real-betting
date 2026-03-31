@@ -286,6 +286,7 @@ export function CasinoGamesPage() {
   const [gameDemo, setGameDemo] = useState<{
     name: string;
     provider: string;
+    gameCategory: string;
   } | null>(null);
 
   const filtered = useMemo(() => {
@@ -395,7 +396,26 @@ export function CasinoGamesPage() {
                 <button
                   type="button"
                   onClick={() =>
-                    setGameDemo({ name: game.name, provider: game.provider })
+                    setGameDemo({
+                      name: game.name,
+                      provider: game.provider,
+                      gameCategory:
+                        game.category === "Slots"
+                          ? "slots"
+                          : game.category === "Card"
+                            ? "card"
+                            : game.category === "Fishing"
+                              ? "fishing"
+                              : game.category === "Live"
+                                ? "live"
+                                : game.category === "Crash"
+                                  ? "crash"
+                                  : game.category === "Sports"
+                                    ? "sports"
+                                    : game.category === "Lottery"
+                                      ? "lottery"
+                                      : "slots",
+                    })
                   }
                   className="bg-black/60 hover:bg-gold hover:text-black text-white text-[10px] font-black px-2 py-1 rounded transition-colors w-full text-center"
                 >
@@ -423,6 +443,7 @@ export function CasinoGamesPage() {
         onClose={() => setGameDemo(null)}
         gameName={gameDemo?.name ?? ""}
         provider={gameDemo?.provider ?? ""}
+        gameCategory={gameDemo?.gameCategory ?? "slots"}
       />
     </div>
   );

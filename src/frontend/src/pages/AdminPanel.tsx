@@ -1,5 +1,14 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -9,7 +18,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
+  Bell,
   CheckCircle2,
   Clock,
   Crown,
@@ -21,6 +32,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import type { TransactionRequest, User } from "../App";
 
 type MemberRecord = User & { password: string; referralCode?: string };
@@ -29,12 +41,18 @@ interface AdminPanelProps {
   members: MemberRecord[];
   transactionRequests: TransactionRequest[];
   onUpdateRequest: (id: string, status: "approved" | "rejected") => void;
+  onBroadcastNotification: (
+    targets: string[] | "all",
+    title: string,
+    detail: string,
+  ) => void;
 }
 
 export function AdminPanel({
   members,
   transactionRequests,
   onUpdateRequest,
+  onBroadcastNotification,
 }: AdminPanelProps) {
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>(
     () => Object.fromEntries(members.map((m) => [m.username, true])),
@@ -179,6 +197,15 @@ export function AdminPanel({
                   {pendingCount} pending
                 </span>
               )}
+            </TabsTrigger>
+            <TabsTrigger
+              value="notifications"
+              data-ocid="admin.notifications.tab"
+              className="font-bold data-[state=active]:text-pink-400"
+              style={{ color: "oklch(0.65 0.06 285)" }}
+            >
+              <Bell size={15} className="mr-1.5" />
+              Notifications
             </TabsTrigger>
           </TabsList>
 
@@ -622,6 +649,13 @@ export function AdminPanel({
               )}
             </section>
           </TabsContent>
+
+          <TabsContent value="notifications">
+            <NotificationsTab
+              members={members}
+              onBroadcast={onBroadcastNotification}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -727,6 +761,131 @@ function StatCard({
       <p className="text-xl font-black" style={{ color }}>
         {value}
       </p>
+    </div>
+  );
+}
+
+function NotificationsTab({
+  members,
+  onBroadcast,
+}: {
+  members: MemberRecord[];
+  onBroadcast: (
+    targets: string[] | "all",
+    title: string,
+    detail: string,
+  ) => void;
+}) {
+  const [recipient, setRecipient] = useState("all");
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+
+  function send() {
+    if (!title.trim() || !message.trim()) return;
+    const targets = recipient === "all" ? "all" : [recipient];
+    onBroadcast(targets, title.trim(), message.trim());
+    toast.success("Notification sent!");
+    setTitle("");
+    setMessage("");
+    setRecipient("all");
+  }
+
+  return (
+    <div
+      className="rounded-2xl p-6 space-y-5"
+      style={{
+        background: "oklch(0.14 0.08 285)",
+        border: "1px solid oklch(0.22 0.08 285)",
+      }}
+      data-ocid="admin.notifications.panel"
+    >
+      <div>
+        <h3
+          className="font-display font-bold text-lg mb-1"
+          style={{ color: "oklch(0.85 0.18 50)" }}
+        >
+          📢 Broadcast Notification
+        </h3>
+        <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
+          Send a promo or announcement to all members or a specific user
+        </p>
+      </div>
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <Label
+            className="text-xs font-bold"
+            style={{ color: "oklch(0.65 0.06 285)" }}
+          >
+            Recipient
+          </Label>
+          <Select value={recipient} onValueChange={setRecipient}>
+            <SelectTrigger
+              className="bg-input border-border text-foreground"
+              data-ocid="admin.notifications.select"
+            >
+              <SelectValue placeholder="Select recipient" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Members</SelectItem>
+              {members.map((m) => (
+                <SelectItem key={m.username} value={m.username}>
+                  {m.name} (@{m.username})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5">
+          <Label
+            className="text-xs font-bold"
+            style={{ color: "oklch(0.65 0.06 285)" }}
+          >
+            Notification Title
+          </Label>
+          <Input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="e.g. Special Bonus Alert!"
+            className="bg-input border-border text-foreground placeholder:text-muted-foreground"
+            data-ocid="admin.notifications.input"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <Label
+            className="text-xs font-bold"
+            style={{ color: "oklch(0.65 0.06 285)" }}
+          >
+            Message
+          </Label>
+          <Textarea
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Write your notification message here..."
+            rows={3}
+            className="bg-input border-border text-foreground placeholder:text-muted-foreground resize-none"
+            data-ocid="admin.notifications.textarea"
+          />
+        </div>
+        <Button
+          type="button"
+          onClick={send}
+          disabled={!title.trim() || !message.trim()}
+          className="w-full h-11 font-black"
+          data-ocid="admin.notifications.submit_button"
+          style={{
+            background:
+              !title.trim() || !message.trim()
+                ? "oklch(0.35 0.05 285)"
+                : "linear-gradient(135deg, oklch(0.75 0.25 330), oklch(0.65 0.28 350))",
+            color:
+              !title.trim() || !message.trim()
+                ? "oklch(0.5 0.03 285)"
+                : "white",
+          }}
+        >
+          📢 Send Notification
+        </Button>
+      </div>
     </div>
   );
 }
