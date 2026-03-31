@@ -443,7 +443,6 @@ export function CasinoGamesPage() {
         onClose={() => setGameDemo(null)}
         gameName={gameDemo?.name ?? ""}
         provider={gameDemo?.provider ?? ""}
-        gameCategory={gameDemo?.gameCategory ?? "slots"}
       />
     </div>
   );

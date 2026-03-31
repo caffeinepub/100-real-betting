@@ -3,6 +3,7 @@ import {
   Clock,
   TrendingDown,
   TrendingUp,
+  Trophy,
   Wallet,
   XCircle,
 } from "lucide-react";
@@ -44,6 +45,8 @@ export function BalancePage({ user, transactions }: BalancePageProps) {
     (t) => t.type === "withdrawal" && t.status === "pending",
   ).length;
 
+  const winningBalance = user.balance ?? 0;
+
   return (
     <div className="container mx-auto px-4 py-6 max-w-2xl">
       {/* Page title */}
@@ -67,26 +70,34 @@ export function BalancePage({ user, transactions }: BalancePageProps) {
         </div>
       </div>
 
-      {/* Current balance hero */}
+      {/* Winning Balance hero */}
       <div
         className="rounded-2xl p-6 mb-4"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.55 0.28 330), oklch(0.45 0.3 290))",
-          boxShadow: "0 4px 30px oklch(0.55 0.28 330 / 0.4)",
+            "linear-gradient(135deg, oklch(0.42 0.28 155), oklch(0.35 0.25 175))",
+          boxShadow: "0 4px 30px oklch(0.75 0.22 140 / 0.45)",
         }}
       >
-        <p className="text-sm font-bold opacity-80 mb-1">Current Balance</p>
-        <p className="font-black text-4xl">
-          PKR {(user.balance ?? 0).toLocaleString()}
+        <div className="flex items-center gap-2 mb-2">
+          <Trophy size={18} style={{ color: "oklch(0.95 0.18 85)" }} />
+          <p
+            className="text-sm font-black tracking-wide"
+            style={{ color: "oklch(0.95 0.18 85)" }}
+          >
+            Winning Balance
+          </p>
+        </div>
+        <p className="font-black text-4xl" style={{ color: "#ffffff" }}>
+          PKR {winningBalance.toLocaleString()}
         </p>
-        <p className="text-xs opacity-60 mt-2">
-          Demo balance · No real money involved
+        <p className="text-xs mt-2" style={{ color: "oklch(0.88 0.12 155)" }}>
+          Available to withdraw · Tap Withdraw to cash out
         </p>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <div
           className="rounded-xl p-4"
           style={{
@@ -149,6 +160,37 @@ export function BalancePage({ user, transactions }: BalancePageProps) {
             </p>
           )}
         </div>
+      </div>
+
+      {/* Winning Balance stat card */}
+      <div
+        className="rounded-xl p-4 mb-6"
+        style={{
+          background: "oklch(0.14 0.08 285)",
+          border: "1px solid oklch(0.75 0.22 140 / 0.5)",
+        }}
+      >
+        <div className="flex items-center gap-2 mb-1">
+          <Trophy size={14} style={{ color: "oklch(0.75 0.22 140)" }} />
+          <span
+            className="text-xs font-bold"
+            style={{ color: "oklch(0.75 0.22 140)" }}
+          >
+            🏆 Winning Balance
+          </span>
+        </div>
+        <p
+          className="font-black text-2xl"
+          style={{ color: "oklch(0.75 0.22 140)" }}
+        >
+          PKR {winningBalance.toLocaleString()}
+        </p>
+        <p
+          className="text-[11px] mt-0.5"
+          style={{ color: "oklch(0.55 0.05 285)" }}
+        >
+          Available to withdraw
+        </p>
       </div>
 
       {/* Transaction history */}

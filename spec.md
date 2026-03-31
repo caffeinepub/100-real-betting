@@ -1,32 +1,30 @@
 # 100%Real Betting
 
 ## Current State
-App has: Dashboard with sports betting markets, Bet Slip, My Bets, Admin Panel, Account Summary.
-Header has branding 'WinSport', nav links, login, deposit button.
+All user data (accounts, balances, transactions, notifications) is stored in browser `localStorage`. This means:
+- Data is lost when the app is redeployed to a new URL
+- Data is device-specific (can't log in from another device)
+- The Motoko backend has `registerAccount` and `loginAccount` functions but they use non-stable variables (`let` not `stable var`) so they reset on canister upgrade
+- The frontend never calls the backend for user management
 
 ## Requested Changes (Diff)
 
 ### Add
-- Rebrand to '100%Real' with updated header logo/name
-- Casino Games lobby page with sections: Slots (JILI, JDB), Live Casino, Crash Games, Fishing Games, Poker/Card Games
-- Member Signup/Registration modal with form: name, phone, username, password, referral code (optional)
-- Deposit modal with payment methods: JazzCash, Easypaisa, Bank Transfer — each with account details and amount input
-- Withdrawal modal with same payment methods — enter amount + account number/IBAN
-- Nav link for Casino Games
-- Games page with game cards showing provider name (JILI/JDB), game name, thumbnail, Play button
+- Stable storage in Motoko backend for: user profiles, balances, transactions, notifications
+- Backend API endpoints: `getMembers`, `submitTransaction`, `updateTransaction`, `getUserTransactions`, `getUserNotifications`, `addNotificationForUser`, `broadcastNotification`, `markNotificationRead`, `forgotPassword`
+- Frontend uses backend APIs for all user data operations instead of localStorage
 
 ### Modify
-- Header branding from 'WinSport' to '100%Real'
-- Header buttons: Login, Sign Up (opens signup modal), Deposit (opens payment modal), Withdraw (opens payment modal)
-- App.tsx to add Casino page routing
+- `main.mo`: Add `stable var` maps for profiles, balances, transactions, notifications; add new API endpoints
+- `App.tsx`: Replace localStorage-based state with backend API calls for users, transactions, notifications
+- All components that receive member/transaction/notification data: update to use async backend data
 
 ### Remove
-- Nothing
+- `useLocalState` calls for `app_registered_users`, `app_transactions`, `app_notifications` (replace with backend calls)
 
 ## Implementation Plan
-1. Update Header branding to '100%Real'
-2. Create SignupModal component with registration form
-3. Create PaymentModal component with deposit/withdrawal tabs, three payment methods
-4. Create CasinoGames page with game cards grid (JILI, JDB, Live, Crash, Fishing, Poker sections)
-5. Wire all modals into header buttons
-6. Add Casino nav item in App.tsx
+1. Rewrite `main.mo` with stable storage for all user data and comprehensive API surface
+2. Regenerate `backend.d.ts` via generate_motoko_code
+3. Update `App.tsx` to load/save data via backend instead of localStorage
+4. Update `AdminPanel.tsx` to fetch members and transactions from backend
+5. Keep `app_current_user` in localStorage only for session (login state), not for master data

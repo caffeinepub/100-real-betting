@@ -171,10 +171,12 @@ function GameCardComp({
   card,
   providerTitle,
   onPlay,
+  categoryId,
 }: {
   card: GameCard;
   providerTitle: string;
-  onPlay: (name: string, provider: string) => void;
+  onPlay: (name: string, provider: string, categoryId: string) => void;
+  categoryId: string;
 }) {
   return (
     <div className="group rounded-xl overflow-hidden cursor-pointer transition-all hover:scale-105 hover:shadow-lg">
@@ -190,7 +192,7 @@ function GameCardComp({
         )}
         <button
           type="button"
-          onClick={() => onPlay(card.name, providerTitle)}
+          onClick={() => onPlay(card.name, providerTitle, categoryId)}
           className="ml-auto bg-black/60 hover:bg-gold hover:text-black text-white text-[10px] font-black px-2 py-1 rounded transition-colors"
         >
           Play Now
@@ -209,6 +211,7 @@ export function CasinoLobby({ onNavigate }: CasinoLobbyProps) {
   const [gameDemo, setGameDemo] = useState<{
     name: string;
     provider: string;
+    gameCategory: string;
   } | null>(null);
 
   return (
@@ -298,7 +301,10 @@ export function CasinoLobby({ onNavigate }: CasinoLobbyProps) {
                 <GameCardComp
                   card={card}
                   providerTitle={provider.title}
-                  onPlay={(name, prov) => setGameDemo({ name, provider: prov })}
+                  onPlay={(name, prov, catId) =>
+                    setGameDemo({ name, provider: prov, gameCategory: catId })
+                  }
+                  categoryId={provider.id}
                 />
               </div>
             ))}

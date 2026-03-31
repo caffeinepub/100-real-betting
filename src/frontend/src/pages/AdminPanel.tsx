@@ -26,6 +26,7 @@ import {
   Crown,
   Share2,
   ShieldCheck,
+  Trash2,
   TrendingDown,
   TrendingUp,
   Users,
@@ -41,6 +42,7 @@ interface AdminPanelProps {
   members: MemberRecord[];
   transactionRequests: TransactionRequest[];
   onUpdateRequest: (id: string, status: "approved" | "rejected") => void;
+  onDeleteMember: (username: string) => void;
   onBroadcastNotification: (
     targets: string[] | "all",
     title: string,
@@ -52,6 +54,7 @@ export function AdminPanel({
   members,
   transactionRequests,
   onUpdateRequest,
+  onDeleteMember,
   onBroadcastNotification,
 }: AdminPanelProps) {
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>(
@@ -412,6 +415,27 @@ export function AdminPanel({
                               >
                                 {isActive ? "Deactivate" : "Activate"}
                               </Button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      `Delete member "${member.username}"? This cannot be undone.`,
+                                    )
+                                  ) {
+                                    onDeleteMember(member.username);
+                                  }
+                                }}
+                                className="ml-2 p-1.5 rounded-lg transition-colors"
+                                style={{
+                                  color: "oklch(0.65 0.25 25)",
+                                  background: "oklch(0.65 0.25 25 / 0.1)",
+                                }}
+                                title="Delete member"
+                                data-ocid={`admin.members.delete_button.${i + 1}`}
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </TableCell>
                           </TableRow>
                         );

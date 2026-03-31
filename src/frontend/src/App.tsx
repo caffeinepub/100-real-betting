@@ -1,5 +1,5 @@
 import { Toaster } from "@/components/ui/sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { APKDownloadModal } from "./components/APKDownloadModal";
 import { DepositModal } from "./components/DepositModal";
@@ -116,6 +116,27 @@ export default function App() {
     TransactionRequest[]
   >("app_transactions", []);
 
+  // Push history entry whenever page or modal changes
+  useEffect(() => {
+    history.pushState({ page, modal }, "");
+  }, [page, modal]);
+
+  // Handle Android/browser back button via popstate
+  useEffect(() => {
+    function handlePopState(e: PopStateEvent) {
+      const state = e.state as { page?: Page; modal?: ModalState } | null;
+      if (state) {
+        setPage(state.page ?? "lobby");
+        setModal(state.modal ?? "none");
+      } else {
+        setPage("lobby");
+        setModal("none");
+      }
+    }
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
   const notifications =
     user && !user.isAdmin ? (userNotifications[user.username] ?? []) : [];
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -126,6 +147,12 @@ export default function App() {
   const referralCount = user
     ? registeredUsers.filter((u) => u.referralCode === user.username).length
     : 0;
+
+  const referredMembers = user
+    ? registeredUsers
+        .filter((u) => u.referralCode === user.username)
+        .map((u) => ({ username: u.username, name: u.name, joinedAt: "" }))
+    : [];
 
   function markRead(id: string) {
     if (!user) return;
@@ -267,6 +294,10 @@ export default function App() {
     setTransactionRequests((prev) => [newReq, ...prev]);
   }
 
+  function handleDeleteMember(username: string) {
+    setRegisteredUsers((prev) => prev.filter((u) => u.username !== username));
+  }
+
   function handleUpdateRequest(id: string, status: "approved" | "rejected") {
     const req = transactionRequests.find((r) => r.id === id);
 
@@ -336,6 +367,23 @@ export default function App() {
       />
 
       <main className="flex-1">
+        {page !== "lobby" && page !== "admin" && (
+          <div className="md:hidden px-4 pt-3 pb-1">
+            <button
+              type="button"
+              data-ocid="nav.back_button"
+              onClick={() => navigateTo("lobby")}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm"
+              style={{
+                background: "oklch(0.82 0.22 75 / 0.15)",
+                border: "1px solid oklch(0.82 0.22 75 / 0.4)",
+                color: "oklch(0.82 0.22 75)",
+              }}
+            >
+              ← Back to Lobby
+            </button>
+          </div>
+        )}
         {page === "lobby" && <CasinoLobby onNavigate={navigateTo} />}
         {page === "games" && <CasinoGamesPage />}
         {page === "vip" && <VipPage />}
@@ -348,6 +396,7 @@ export default function App() {
             members={registeredUsers}
             transactionRequests={transactionRequests}
             onUpdateRequest={handleUpdateRequest}
+            onDeleteMember={handleDeleteMember}
             onBroadcastNotification={handleBroadcastNotification}
           />
         )}
@@ -401,6 +450,7 @@ export default function App() {
           onClose={() => setModal("none")}
           username={user.username}
           referralCount={referralCount}
+          referredMembers={referredMembers}
         />
       )}
 

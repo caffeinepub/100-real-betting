@@ -12,19 +12,227 @@ interface GameDemoModalProps {
   onClose: () => void;
   gameName: string;
   provider: string;
-  gameCategory?: string;
 }
 
-const SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💰", "🎰", "7️⃣"];
-const REEL_KEYS = ["reel-1", "reel-2", "reel-3"] as const;
+// ===================== SLOT CONFIG =====================
+type SlotConfig = {
+  symbols: string[];
+  accentColor: string;
+  bgGradient: string;
+};
 
-function randomSymbol() {
-  return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)];
+const SLOT_CONFIGS: Record<string, SlotConfig> = {
+  "Fortune Gems": {
+    symbols: ["💎", "💍", "💠", "🔷", "✨", "🌟", "👑", "💜"],
+    accentColor: "oklch(0.75 0.25 300)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.12 300), oklch(0.10 0.09 270))",
+  },
+  "Super Ace": {
+    symbols: ["🂡", "🂱", "🃁", "🃑", "♠", "♥", "♦", "♣"],
+    accentColor: "oklch(0.75 0.2 220)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.10 220), oklch(0.10 0.08 240))",
+  },
+  "Money Coming": {
+    symbols: ["💰", "💵", "💳", "🏦", "🤑", "💸", "🪙", "💱"],
+    accentColor: "oklch(0.8 0.22 130)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.10 130), oklch(0.10 0.08 140))",
+  },
+  "Crazy 777": {
+    symbols: ["7️⃣", "🍒", "🔔", "⭐", "🍋", "🎰", "💎", "BAR"],
+    accentColor: "oklch(0.85 0.18 50)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.15 0.10 50), oklch(0.10 0.07 60))",
+  },
+  "Lucky Goldbricks": {
+    symbols: ["🧱", "🟡", "⚱️", "🏺", "💛", "🌕", "⭐", "🔱"],
+    accentColor: "oklch(0.8 0.22 60)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.10 60), oklch(0.10 0.08 55))",
+  },
+  "Zeus 2": {
+    symbols: ["⚡", "🌩️", "🏛️", "🦅", "🔱", "⚡", "🌪️", "🌟"],
+    accentColor: "oklch(0.75 0.22 270)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.11 270), oklch(0.10 0.08 280))",
+  },
+  "Mahjong Ways": {
+    symbols: ["🀄", "🎴", "🀅", "🀃", "🀆", "🎲", "🀁", "🀂"],
+    accentColor: "oklch(0.7 0.22 30)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.10 30), oklch(0.10 0.08 20))",
+  },
+  "Ganesha Gold": {
+    symbols: ["🐘", "🌺", "🙏", "🪷", "✨", "🏆", "💫", "🎋"],
+    accentColor: "oklch(0.75 0.22 80)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.10 80), oklch(0.10 0.08 65))",
+  },
+  "Wild Bounty": {
+    symbols: ["🤠", "🔫", "💰", "🐎", "⭐", "🏜️", "🌵", "🎯"],
+    accentColor: "oklch(0.7 0.2 50)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.09 45), oklch(0.10 0.07 35))",
+  },
+  "Treasures of Aztec": {
+    symbols: ["🗿", "🦜", "⚗️", "🌿", "💎", "🦎", "🌞", "🪬"],
+    accentColor: "oklch(0.7 0.2 140)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.10 140), oklch(0.10 0.07 130))",
+  },
+  "Sweet Bonanza": {
+    symbols: ["🍬", "🍭", "🍒", "🍇", "🍓", "🍑", "🍋", "🍑"],
+    accentColor: "oklch(0.75 0.25 330)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.11 330), oklch(0.10 0.09 320))",
+  },
+  "Gates of Olympus": {
+    symbols: ["⚡", "🏛️", "👑", "🔮", "💫", "🌟", "🔱", "🌩️"],
+    accentColor: "oklch(0.75 0.22 270)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.12 270), oklch(0.10 0.09 285))",
+  },
+  "The Dog House": {
+    symbols: ["🐶", "🦴", "🐾", "🏠", "🐕", "🐩", "🎾", "💛"],
+    accentColor: "oklch(0.7 0.2 50)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.09 50), oklch(0.10 0.07 45))",
+  },
+  "Starlight Princess": {
+    symbols: ["⭐", "🌟", "💫", "✨", "🌸", "🎀", "🌙", "👸"],
+    accentColor: "oklch(0.75 0.22 320)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.11 320), oklch(0.10 0.08 305))",
+  },
+  "Lucky Koi": {
+    symbols: ["🐠", "🌊", "🌸", "🍀", "💮", "🐡", "🎏", "⛩️"],
+    accentColor: "oklch(0.7 0.22 195)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.11 195), oklch(0.10 0.08 210))",
+  },
+  "Book of Myth": {
+    symbols: ["📖", "🔮", "🦅", "⚖️", "🏛️", "🌙", "⭐", "🪄"],
+    accentColor: "oklch(0.75 0.18 60)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.09 60), oklch(0.10 0.07 50))",
+  },
+  "Dancing Fever": {
+    symbols: ["💃", "🕺", "🎵", "🎶", "🌈", "✨", "🎤", "🎸"],
+    accentColor: "oklch(0.75 0.25 330)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.12 330), oklch(0.10 0.09 310))",
+  },
+  "Alien Hunter": {
+    symbols: ["👽", "🛸", "🔭", "🚀", "🌌", "⭐", "💫", "🔫"],
+    accentColor: "oklch(0.7 0.22 195)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.11 0.10 210), oklch(0.08 0.07 225))",
+  },
+  "Boom Legend": {
+    symbols: ["💣", "💥", "🔥", "⚡", "🎆", "🌋", "💫", "🔱"],
+    accentColor: "oklch(0.7 0.25 27)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.11 27), oklch(0.10 0.08 15))",
+  },
+  "Thor Hammer": {
+    symbols: ["🔨", "⚡", "🌩️", "🛡️", "⚔️", "🏔️", "❄️", "🌟"],
+    accentColor: "oklch(0.7 0.2 240)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.10 240), oklch(0.10 0.08 255))",
+  },
+  "Sky Conquest": {
+    symbols: ["✈️", "🚀", "🛩️", "🌌", "⭐", "🌙", "🛸", "💫"],
+    accentColor: "oklch(0.65 0.2 220)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.11 0.10 220), oklch(0.08 0.07 230))",
+  },
+  "Slot Car Rally": {
+    symbols: ["🏎️", "🏁", "⚡", "🔥", "🏆", "🛣️", "🎯", "💨"],
+    accentColor: "oklch(0.7 0.25 50)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.11 27), oklch(0.10 0.08 15))",
+  },
+};
+
+const DEFAULT_SLOT_SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💰", "🎰", "7️⃣"];
+const DEFAULT_SLOT_CONFIG: SlotConfig = {
+  symbols: DEFAULT_SLOT_SYMBOLS,
+  accentColor: "oklch(0.75 0.25 330)",
+  bgGradient:
+    "linear-gradient(135deg, oklch(0.16 0.1 290), oklch(0.12 0.08 280))",
+};
+
+// Determine game type from provider or game name
+function getGameType(provider: string, gameName: string): string {
+  const p = provider.toLowerCase();
+  const g = gameName.toLowerCase();
+  if (
+    p.includes("crash") ||
+    g.includes("aviator") ||
+    g.includes("jetx") ||
+    g.includes("spaceman") ||
+    g.includes("crash")
+  )
+    return "crash";
+  if (
+    p.includes("fishing") ||
+    g.includes("ocean king") ||
+    g.includes("crab") ||
+    g.includes("fish") ||
+    g.includes("golden toad") ||
+    g.includes("pirate king")
+  )
+    return "fishing";
+  // Card/table games — must come BEFORE live check so specific game names override provider
+  if (
+    p.includes("card") ||
+    p.includes("poker") ||
+    g.includes("teen patti") ||
+    g.includes("andar") ||
+    g.includes("baccarat") ||
+    g.includes("blackjack") ||
+    g.includes("poker") ||
+    g.includes("dragon tiger") ||
+    g.includes("royal flush")
+  )
+    return "card";
+  // Roulette is the live game; other live casino names fall through to slots if not card
+  if (g.includes("roulette")) return "live";
+  if (
+    p.includes("sport") ||
+    g.includes("cricket") ||
+    g.includes("football") ||
+    g.includes("tennis") ||
+    g.includes("psl")
+  )
+    return "sports";
+  if (
+    p.includes("lottery") ||
+    p.includes("keno") ||
+    g.includes("lottery") ||
+    g.includes("keno") ||
+    g.includes("lucky draw") ||
+    g.includes("scratch") ||
+    g.includes("mega")
+  )
+    return "lottery";
+  return "slots";
 }
 
-// ---- Slot Game ----
-function SlotGame() {
-  const [reels, setReels] = useState(["🎰", "🎰", "🎰"]);
+// ===================== SLOTS DEMO =====================
+function randomSymbolFrom(symbols: string[]) {
+  return symbols[Math.floor(Math.random() * symbols.length)];
+}
+
+function SlotsDemo({ config }: { config?: SlotConfig }) {
+  const cfg = config ?? DEFAULT_SLOT_CONFIG;
+  const [reels, setReels] = useState([
+    cfg.symbols[0],
+    cfg.symbols[0],
+    cfg.symbols[0],
+  ]);
   const [spinning, setSpinning] = useState(false);
   const [balance, setBalance] = useState(500);
   const [result, setResult] = useState<string | null>(null);
@@ -33,31 +241,39 @@ function SlotGame() {
 
   function spin() {
     if (spinning || balance < 50) return;
-    setBalance((prev) => prev - 50);
+    setBalance((b) => b - 50);
     setResult(null);
     setSpinning(true);
     setSpinCount((c) => c + 1);
-    intervalRef.current = setInterval(() => {
-      setReels([randomSymbol(), randomSymbol(), randomSymbol()]);
-    }, 80);
+    intervalRef.current = setInterval(
+      () =>
+        setReels([
+          randomSymbolFrom(cfg.symbols),
+          randomSymbolFrom(cfg.symbols),
+          randomSymbolFrom(cfg.symbols),
+        ]),
+      80,
+    );
     setTimeout(() => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      const final = [randomSymbol(), randomSymbol(), randomSymbol()];
+      const final = [
+        randomSymbolFrom(cfg.symbols),
+        randomSymbolFrom(cfg.symbols),
+        randomSymbolFrom(cfg.symbols),
+      ];
       setReels(final);
       setSpinning(false);
       if (final[0] === final[1] && final[1] === final[2]) {
         setResult("jackpot");
-        setBalance((prev) => prev + 500);
+        setBalance((b) => b + 500);
       } else if (
         final[0] === final[1] ||
         final[1] === final[2] ||
         final[0] === final[2]
       ) {
         setResult("win");
-        setBalance((prev) => prev + 200);
-      } else {
-        setResult("lose");
-      }
+        setBalance((b) => b + 200);
+      } else setResult("lose");
     }, 1500);
   }
 
@@ -69,47 +285,42 @@ function SlotGame() {
   );
 
   return (
-    <>
-      <BalanceDisplay balance={balance} />
+    <div className="space-y-4">
       <div
         className="rounded-2xl p-4 flex flex-col items-center gap-4"
         style={{
-          background:
-            "linear-gradient(135deg, oklch(0.16 0.1 290), oklch(0.12 0.08 280))",
-          border: "2px solid oklch(0.85 0.18 50 / 0.3)",
-          boxShadow: "inset 0 0 40px oklch(0.1 0.07 285 / 0.8)",
+          background: cfg.bgGradient,
+          border: `2px solid ${cfg.accentColor.replace(")", " / 0.35)").replace("oklch(", "oklch(")}`,
         }}
       >
         <div className="flex gap-3">
-          {reels.map((symbol, idx) => (
+          {reels.map((s, i) => (
             <div
-              key={REEL_KEYS[idx]}
+              // biome-ignore lint/suspicious/noArrayIndexKey: static reel positions
+              key={i}
               className="w-20 h-20 rounded-xl flex items-center justify-center text-4xl"
               style={{
                 background: "oklch(0.1 0.07 285)",
-                border: "2px solid oklch(0.85 0.18 50 / 0.4)",
-                boxShadow: spinning
-                  ? "0 0 20px oklch(0.85 0.18 50 / 0.5)"
-                  : "none",
+                border: `2px solid ${cfg.accentColor.replace(")", " / 0.4)").replace("oklch(", "oklch(")}`,
                 filter: spinning ? "blur(1px)" : "none",
               }}
             >
-              {symbol}
+              {s}
             </div>
           ))}
         </div>
-        <div className="h-8 flex items-center justify-center">
+        <div className="h-7 flex items-center">
           {result === "jackpot" && (
             <p
-              className="font-black text-base animate-pulse"
-              style={{ color: "oklch(0.85 0.18 50)" }}
+              className="font-black text-sm animate-pulse"
+              style={{ color: cfg.accentColor }}
             >
               🎉 JACKPOT! +PKR 500
             </p>
           )}
           {result === "win" && (
             <p
-              className="font-black text-base"
+              className="font-black text-sm"
               style={{ color: "oklch(0.75 0.2 195)" }}
             >
               Nice Win! +PKR 200
@@ -126,16 +337,11 @@ function SlotGame() {
           onClick={spin}
           disabled={spinning || balance < 50}
           className="w-full h-12 text-lg font-black"
-          data-ocid="gamedemo.spin.button"
           style={{
             background:
               spinning || balance < 50
                 ? "oklch(0.35 0.05 285)"
-                : "linear-gradient(135deg, oklch(0.75 0.25 330), oklch(0.65 0.28 350))",
-            boxShadow:
-              spinning || balance < 50
-                ? "none"
-                : "0 4px 20px oklch(0.75 0.25 330 / 0.5)",
+                : `linear-gradient(135deg, ${cfg.accentColor}, oklch(0.6 0.28 ${cfg.accentColor.match(/\d+\)$/)?.[0]?.replace(")", "") ?? "330"}))`,
             color: spinning || balance < 50 ? "oklch(0.5 0.03 285)" : "white",
           }}
         >
@@ -145,158 +351,286 @@ function SlotGame() {
               ? "No Balance"
               : "🎰 SPIN — PKR 50"}
         </Button>
-        <p
-          className="text-[10px] text-center"
-          style={{ color: "oklch(0.45 0.04 285)" }}
-        >
-          Demo credits only · No real money involved
-        </p>
       </div>
-      <div className="flex justify-between text-xs px-1">
-        <span style={{ color: "oklch(0.55 0.05 285)" }}>
-          Spins: {spinCount}
-        </span>
-        <span style={{ color: "oklch(0.55 0.05 285)" }}>
-          Cost per spin: PKR 50
-        </span>
+      <div
+        className="flex justify-between text-xs px-1"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        <span>Spins: {spinCount}</span>
+        <span>PKR {balance.toLocaleString()}</span>
       </div>
-    </>
+    </div>
   );
 }
 
-// ---- Crash Game ----
-function CrashGame() {
-  const [balance, setBalance] = useState(500);
+// ===================== CRASH DEMO =====================
+function CrashDemo() {
+  const [phase, setPhase] = useState<"waiting" | "flying" | "crashed">(
+    "waiting",
+  );
   const [multiplier, setMultiplier] = useState(1.0);
-  const [phase, setPhase] = useState<
-    "idle" | "running" | "cashedout" | "crashed"
-  >("idle");
-  const [crashAt, setCrashAt] = useState(2.0);
-  const [result, setResult] = useState<string | null>(null);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const [balance, setBalance] = useState(500);
+  const [bet, setBet] = useState(50);
+  const [cashedOut, setCashedOut] = useState<number | null>(null);
+  const [crashAt, setCrashAt] = useState(1.0);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number>(0);
+  const crashAtRef = useRef(1.0);
 
   function startRound() {
-    if (balance < 100) return;
-    setBalance((p) => p - 100);
-    const target = 1.2 + Math.random() * 8.8;
+    if (balance < bet) return;
+    setBalance((b) => b - bet);
+    setCashedOut(null);
+    const target = 1 + Math.random() * 8;
     setCrashAt(target);
+    crashAtRef.current = target;
     setMultiplier(1.0);
-    setResult(null);
-    setPhase("running");
+    setPhase("flying");
+    startRef.current = performance.now();
+    function tick(now: number) {
+      const elapsed = (now - startRef.current) / 1000;
+      const m = 1 + elapsed * 0.8;
+      setMultiplier(Number.parseFloat(m.toFixed(2)));
+      if (m >= crashAtRef.current) {
+        setPhase("crashed");
+        return;
+      }
+      rafRef.current = requestAnimationFrame(tick);
+    }
+    rafRef.current = requestAnimationFrame(tick);
   }
-
-  useEffect(() => {
-    if (phase !== "running") return;
-    intervalRef.current = setInterval(() => {
-      setMultiplier((prev) => {
-        const next = prev + 0.05 + prev * 0.01;
-        if (next >= crashAt) {
-          clearInterval(intervalRef.current!);
-          setPhase("crashed");
-          setResult(`Crashed at ${next.toFixed(2)}x! -PKR 100`);
-          return next;
-        }
-        return next;
-      });
-    }, 100);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [phase, crashAt]);
 
   function cashOut() {
-    if (phase !== "running") return;
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    const won = Math.floor(100 * multiplier);
-    setBalance((p) => p + won);
-    setResult(`Cashed out at ${multiplier.toFixed(2)}x! +PKR ${won}`);
-    setPhase("cashedout");
+    if (phase !== "flying") return;
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    const win = Math.floor(bet * multiplier);
+    setBalance((b) => b + win);
+    setCashedOut(win);
+    setPhase("crashed");
   }
 
-  const color =
-    phase === "crashed"
-      ? "oklch(0.65 0.25 20)"
-      : phase === "cashedout"
-        ? "oklch(0.75 0.2 195)"
-        : multiplier < 2
-          ? "oklch(0.85 0.18 50)"
-          : multiplier < 5
-            ? "oklch(0.7 0.2 130)"
-            : "oklch(0.65 0.25 20)";
+  useEffect(
+    () => () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    },
+    [],
+  );
 
   return (
-    <>
-      <BalanceDisplay balance={balance} />
+    <div className="space-y-4">
       <div
-        className="rounded-2xl p-6 flex flex-col items-center gap-4"
+        className="rounded-2xl p-4 flex flex-col items-center gap-3"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.14 0.1 260), oklch(0.1 0.08 280))",
-          border: "2px solid oklch(0.85 0.18 50 / 0.3)",
+            "linear-gradient(135deg, oklch(0.12 0.1 260), oklch(0.1 0.08 280))",
+          border: "2px solid oklch(0.6 0.25 270 / 0.4)",
         }}
       >
         <div
-          className="text-7xl font-black tabular-nums"
-          style={{ color, textShadow: `0 0 40px ${color}` }}
+          className="text-6xl font-black"
+          style={{
+            color:
+              phase === "crashed" && !cashedOut
+                ? "oklch(0.65 0.25 27)"
+                : "oklch(0.85 0.2 140)",
+            textShadow: "0 0 30px currentColor",
+          }}
         >
-          {phase === "crashed" ? "CRASHED" : `${multiplier.toFixed(2)}x`}
+          {multiplier.toFixed(2)}x
         </div>
-        {result && (
-          <p
-            className="font-bold text-sm text-center"
-            style={{
-              color:
-                phase === "cashedout"
-                  ? "oklch(0.75 0.2 195)"
-                  : "oklch(0.65 0.25 20)",
-            }}
-          >
-            {result}
-          </p>
-        )}
-        {phase === "idle" || phase === "crashed" || phase === "cashedout" ? (
+        <div
+          className="text-sm font-bold"
+          style={{ color: "oklch(0.65 0.05 285)" }}
+        >
+          {phase === "waiting" && "Place bet & Start"}
+          {phase === "flying" && "🚀 Flying! Cash out before it crashes!"}
+          {phase === "crashed" &&
+            cashedOut &&
+            `✅ Cashed out! +PKR ${cashedOut}`}
+          {phase === "crashed" &&
+            !cashedOut &&
+            `💥 CRASHED at ${crashAt.toFixed(2)}x!`}
+        </div>
+        <div className="flex gap-2 w-full">
+          {[25, 50, 100, 200].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBet(v)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-black transition-all"
+              style={{
+                background:
+                  bet === v ? "oklch(0.6 0.25 270)" : "oklch(0.2 0.08 285)",
+                color: "white",
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {phase === "flying" ? (
           <Button
             type="button"
-            onClick={startRound}
-            disabled={balance < 100}
-            className="w-full h-11 font-black"
-            data-ocid="gamedemo.crash.button"
+            onClick={cashOut}
+            className="w-full h-12 text-lg font-black"
             style={{
               background:
-                balance < 100
-                  ? "oklch(0.35 0.05 285)"
-                  : "linear-gradient(135deg, oklch(0.65 0.28 350), oklch(0.55 0.25 20))",
-              color: "white",
+                "linear-gradient(135deg, oklch(0.75 0.25 130), oklch(0.65 0.28 150))",
+              color: "black",
             }}
           >
-            {balance < 100 ? "No Balance" : "✈️ Place Bet & Start — PKR 100"}
+            💰 CASH OUT — {multiplier.toFixed(2)}x
           </Button>
         ) : (
           <Button
             type="button"
-            onClick={cashOut}
-            className="w-full h-11 font-black animate-pulse"
-            data-ocid="gamedemo.cashout.button"
+            onClick={startRound}
+            disabled={balance < bet}
+            className="w-full h-12 text-lg font-black"
             style={{
               background:
-                "linear-gradient(135deg, oklch(0.75 0.2 130), oklch(0.65 0.22 150))",
-              color: "black",
+                balance < bet
+                  ? "oklch(0.35 0.05 285)"
+                  : "linear-gradient(135deg, oklch(0.6 0.25 270), oklch(0.5 0.28 290))",
+              color: "white",
             }}
           >
-            💰 Cash Out @ {multiplier.toFixed(2)}x
+            🚀 BET PKR {bet} & FLY
           </Button>
         )}
-        <p className="text-[10px]" style={{ color: "oklch(0.45 0.04 285)" }}>
-          Bet: PKR 100 · Demo only
-        </p>
       </div>
-    </>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
   );
 }
 
-// ---- Card Game (Teen Patti style) ----
-const SUITS = ["♠", "♥", "♦", "♣"];
-const FACES = [
+// ===================== FISHING DEMO =====================
+function FishingDemo() {
+  const [balance, setBalance] = useState(500);
+  const [fish, setFish] = useState(() =>
+    Array.from({ length: 8 }, (_, i) => ({
+      id: i,
+      x: Math.random() * 75 + 5,
+      y: Math.random() * 55 + 10,
+      emoji: ["🐟", "🐠", "🦈", "🐡", "🦐", "🐙"][
+        Math.floor(Math.random() * 6)
+      ],
+      points: [10, 20, 50, 30, 15, 100][Math.floor(Math.random() * 6)],
+      hit: false,
+    })),
+  );
+  const [shots, setShots] = useState(20);
+  const [msg, setMsg] = useState("");
+
+  function shoot(f: (typeof fish)[0]) {
+    if (shots <= 0 || f.hit) return;
+    setShots((s) => s - 1);
+    const hit = Math.random() > 0.35;
+    if (hit) {
+      setFish((prev) =>
+        prev.map((fi) => (fi.id === f.id ? { ...fi, hit: true } : fi)),
+      );
+      setBalance((b) => b + f.points);
+      setMsg(`+PKR ${f.points}!`);
+      setTimeout(() => setMsg(""), 1000);
+    } else {
+      setMsg("Missed!");
+      setTimeout(() => setMsg(""), 700);
+    }
+  }
+
+  function reload() {
+    setShots(20);
+    setFish(
+      Array.from({ length: 8 }, (_, i) => ({
+        id: i,
+        x: Math.random() * 75 + 5,
+        y: Math.random() * 55 + 10,
+        emoji: ["🐟", "🐠", "🦈", "🐡", "🦐", "🐙"][
+          Math.floor(Math.random() * 6)
+        ],
+        points: [10, 20, 50, 30, 15, 100][Math.floor(Math.random() * 6)],
+        hit: false,
+      })),
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="relative rounded-2xl overflow-hidden"
+        style={{
+          height: 200,
+          background:
+            "linear-gradient(180deg, oklch(0.25 0.15 230) 0%, oklch(0.15 0.12 220) 100%)",
+          border: "2px solid oklch(0.5 0.2 220 / 0.4)",
+        }}
+      >
+        {fish.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            onClick={() => shoot(f)}
+            className="absolute text-2xl transition-all"
+            style={{
+              left: `${f.x}%`,
+              top: `${f.y}%`,
+              opacity: f.hit ? 0.2 : 1,
+              transform: f.hit ? "scale(0.5)" : "scale(1)",
+              filter: f.hit ? "grayscale(1)" : "none",
+            }}
+          >
+            {f.emoji}
+          </button>
+        ))}
+        {msg && (
+          <div
+            className="absolute top-2 left-1/2 -translate-x-1/2 font-black text-lg"
+            style={{
+              color: "oklch(0.85 0.18 50)",
+              textShadow: "0 0 10px currentColor",
+            }}
+          >
+            {msg}
+          </div>
+        )}
+      </div>
+      <div className="flex justify-between items-center">
+        <span
+          className="text-sm font-bold"
+          style={{ color: "oklch(0.65 0.05 285)" }}
+        >
+          Shots: {shots} | Balance: PKR {balance}
+        </span>
+        {shots === 0 && (
+          <Button
+            type="button"
+            onClick={reload}
+            className="text-xs font-black px-3 py-1"
+            style={{ background: "oklch(0.6 0.25 195)", color: "black" }}
+          >
+            Reload
+          </Button>
+        )}
+      </div>
+      <p
+        className="text-[10px] text-center"
+        style={{ color: "oklch(0.45 0.04 285)" }}
+      >
+        Tap fish to shoot! Different fish = different prizes.
+      </p>
+    </div>
+  );
+}
+
+// ===================== CARD DEMO (Teen Patti style) =====================
+const CARD_LABELS = [
+  "A",
   "2",
   "3",
   "4",
@@ -309,710 +643,629 @@ const FACES = [
   "J",
   "Q",
   "K",
-  "A",
 ];
-const FACE_VALUES: Record<string, number> = { J: 11, Q: 12, K: 13, A: 14 };
-function cardValue(face: string) {
-  return FACE_VALUES[face] ?? Number.parseInt(face);
-}
+const SUITS = ["♠", "♥", "♦", "♣"];
+
 function randomCard() {
   return {
-    face: FACES[Math.floor(Math.random() * 13)],
+    label: CARD_LABELS[Math.floor(Math.random() * 13)],
     suit: SUITS[Math.floor(Math.random() * 4)],
+    value: Math.floor(Math.random() * 13) + 1,
   };
 }
-function handTotal(cards: { face: string; suit: string }[]) {
-  return cards.reduce((s, c) => s + cardValue(c.face), 0);
-}
 
-function CardGame() {
+function CardDemo() {
   const [balance, setBalance] = useState(500);
+  const [bet, setBet] = useState(50);
   const [playerCards, setPlayerCards] = useState<
-    { face: string; suit: string }[]
+    ReturnType<typeof randomCard>[]
   >([]);
   const [dealerCards, setDealerCards] = useState<
-    { face: string; suit: string }[]
+    ReturnType<typeof randomCard>[]
   >([]);
-  const [phase, setPhase] = useState<"idle" | "dealt">("idle");
-  const [result, setResult] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"bet" | "playing" | "result">("bet");
+  const [resultMsg, setResultMsg] = useState("");
 
   function deal() {
-    if (balance < 100) return;
-    setBalance((p) => p - 100);
-    const pCards = [randomCard(), randomCard(), randomCard()];
-    const dCards = [randomCard(), randomCard(), randomCard()];
-    setPlayerCards(pCards);
-    setDealerCards(dCards);
-    setPhase("dealt");
-    const pt = handTotal(pCards);
-    const dt = handTotal(dCards);
-    if (pt > dt) {
-      setResult("You win! +PKR 200");
-      setBalance((p) => p + 200);
-    } else if (pt < dt) {
-      setResult("Dealer wins! -PKR 100");
-    } else {
-      setResult("Tie! No change.");
-      setBalance((p) => p + 100);
-    }
+    if (balance < bet) return;
+    setBalance((b) => b - bet);
+    setPlayerCards([randomCard(), randomCard(), randomCard()]);
+    setDealerCards([randomCard(), randomCard(), randomCard()]);
+    setPhase("playing");
   }
 
-  const redSuits = new Set(["♥", "♦"]);
+  function showdown() {
+    const pScore = playerCards.reduce((a, c) => a + Math.min(c.value, 10), 0);
+    const dScore = dealerCards.reduce((a, c) => a + Math.min(c.value, 10), 0);
+    if (pScore > dScore) {
+      setBalance((b) => b + bet * 2);
+      setResultMsg(`You Win! +PKR ${bet * 2}`);
+    } else if (pScore === dScore) {
+      setBalance((b) => b + bet);
+      setResultMsg(`Tie! Bet returned PKR ${bet}`);
+    } else setResultMsg(`Dealer wins! Lost PKR ${bet}`);
+    setPhase("result");
+  }
+
+  const cardStyle = (suit: string) => ({
+    color:
+      suit === "♥" || suit === "♦"
+        ? "oklch(0.65 0.25 27)"
+        : "oklch(0.95 0.02 285)",
+    background: "oklch(0.97 0.01 285)",
+    border: "1px solid oklch(0.8 0.02 285)",
+  });
 
   return (
-    <>
-      <BalanceDisplay balance={balance} />
+    <div className="space-y-3">
       <div
-        className="rounded-2xl p-4 flex flex-col gap-4"
+        className="rounded-2xl p-4 space-y-3"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.14 0.1 260), oklch(0.1 0.08 280))",
-          border: "2px solid oklch(0.85 0.18 50 / 0.3)",
+            "linear-gradient(135deg, oklch(0.12 0.1 150), oklch(0.1 0.08 130))",
+          border: "2px solid oklch(0.5 0.2 150 / 0.4)",
         }}
       >
-        {phase === "dealt" && (
+        {phase !== "bet" && (
           <>
-            <div>
+            <div className="text-center">
               <p
-                className="text-xs font-bold mb-2"
-                style={{ color: "oklch(0.75 0.2 195)" }}
+                className="text-xs font-bold mb-1"
+                style={{ color: "oklch(0.65 0.05 285)" }}
               >
-                Your Hand (Total: {handTotal(playerCards)})
+                Dealer
               </p>
-              <div className="flex gap-2">
-                {playerCards.map((c, i) => (
-                  <div
-                    key={`p-${i}-${c.face}${c.suit}`}
-                    className="w-14 h-20 rounded-lg flex flex-col items-center justify-center font-black text-lg"
-                    style={{
-                      background: "white",
-                      color: redSuits.has(c.suit)
-                        ? "oklch(0.55 0.25 20)"
-                        : "oklch(0.15 0.05 285)",
-                    }}
-                  >
-                    <span>{c.face}</span>
-                    <span>{c.suit}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p
-                className="text-xs font-bold mb-2"
-                style={{ color: "oklch(0.65 0.25 20)" }}
-              >
-                Dealer Hand (Total: {handTotal(dealerCards)})
-              </p>
-              <div className="flex gap-2">
+              <div className="flex justify-center gap-2">
                 {dealerCards.map((c, i) => (
                   <div
-                    key={`d-${i}-${c.face}${c.suit}`}
-                    className="w-14 h-20 rounded-lg flex flex-col items-center justify-center font-black text-lg"
-                    style={{
-                      background: "white",
-                      color: redSuits.has(c.suit)
-                        ? "oklch(0.55 0.25 20)"
-                        : "oklch(0.15 0.05 285)",
-                    }}
+                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed card positions
+                    key={i}
+                    className="w-12 h-16 rounded-lg flex flex-col items-center justify-center text-lg font-black"
+                    style={cardStyle(c.suit)}
                   >
-                    <span>{c.face}</span>
+                    <span className="text-sm">{c.label}</span>
                     <span>{c.suit}</span>
                   </div>
                 ))}
               </div>
             </div>
-            {result && (
+            <div className="text-center">
               <p
-                className="font-black text-center"
-                style={{
-                  color: result.includes("win")
-                    ? "oklch(0.75 0.2 130)"
-                    : result.includes("Tie")
-                      ? "oklch(0.85 0.18 50)"
-                      : "oklch(0.65 0.25 20)",
-                }}
+                className="text-xs font-bold mb-1"
+                style={{ color: "oklch(0.75 0.18 50)" }}
               >
-                {result}
+                You
               </p>
-            )}
+              <div className="flex justify-center gap-2">
+                {playerCards.map((c, i) => (
+                  <div
+                    // biome-ignore lint/suspicious/noArrayIndexKey: fixed card positions
+                    key={i}
+                    className="w-12 h-16 rounded-lg flex flex-col items-center justify-center text-lg font-black"
+                    style={cardStyle(c.suit)}
+                  >
+                    <span className="text-sm">{c.label}</span>
+                    <span>{c.suit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           </>
         )}
-        {phase === "idle" && (
-          <p className="text-center text-muted-foreground text-sm py-4">
-            Deal 3 cards each to compare hands
-          </p>
-        )}
-        <Button
-          type="button"
-          onClick={deal}
-          disabled={balance < 100}
-          className="w-full h-11 font-black"
-          data-ocid="gamedemo.deal.button"
-          style={{
-            background:
-              balance < 100
-                ? "oklch(0.35 0.05 285)"
-                : "linear-gradient(135deg, oklch(0.7 0.2 130), oklch(0.6 0.22 150))",
-            color: balance < 100 ? "oklch(0.5 0.03 285)" : "black",
-          }}
-        >
-          {balance < 100 ? "No Balance" : "🃏 Deal Cards — PKR 100"}
-        </Button>
-        <p
-          className="text-[10px] text-center"
-          style={{ color: "oklch(0.45 0.04 285)" }}
-        >
-          Demo credits only · No real money
-        </p>
-      </div>
-    </>
-  );
-}
-
-// ---- Fishing Game ----
-const FISH_LIST = [
-  { emoji: "🐟", value: 10 },
-  { emoji: "🐠", value: 20 },
-  { emoji: "🐡", value: 50 },
-  { emoji: "🦈", value: 100 },
-  { emoji: "🦑", value: 200 },
-  { emoji: "🐙", value: 500 },
-];
-
-function FishingGame() {
-  const [balance, setBalance] = useState(500);
-  const [caught, setCaught] = useState<boolean[]>([
-    false,
-    false,
-    false,
-    false,
-    false,
-    false,
-  ]);
-  const [reveals, setReveals] = useState<(number | null)[]>([
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-  ]);
-  const [lastResult, setLastResult] = useState<string | null>(null);
-
-  function shoot(idx: number) {
-    if (caught[idx] || balance < 20) return;
-    setBalance((p) => p - 20);
-    const val = FISH_LIST[idx].value;
-    const gained = val > 20 ? val : 0;
-    setBalance((p) => p + gained);
-    setLastResult(
-      val > 20 ? `+PKR ${val}! Great catch!` : "-PKR 20. Small fish!",
-    );
-    const newCaught = [...caught];
-    newCaught[idx] = true;
-    setCaught(newCaught);
-    const newReveals = [...reveals];
-    newReveals[idx] = val;
-    setReveals(newReveals);
-    if (newCaught.every(Boolean)) {
-      setTimeout(() => {
-        setCaught([false, false, false, false, false, false]);
-        setReveals([null, null, null, null, null, null]);
-      }, 1500);
-    }
-  }
-
-  return (
-    <>
-      <BalanceDisplay balance={balance} />
-      <div
-        className="rounded-2xl p-4 flex flex-col gap-3"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.14 0.12 220), oklch(0.1 0.1 240))",
-          border: "2px solid oklch(0.55 0.2 220 / 0.5)",
-        }}
-      >
-        <p
-          className="text-xs text-center"
-          style={{ color: "oklch(0.65 0.15 220)" }}
-        >
-          Click a fish to shoot! Cost: PKR 20 per shot
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          {FISH_LIST.map((fish, idx) => (
-            <button
-              key={fish.emoji}
-              type="button"
-              onClick={() => shoot(idx)}
-              disabled={caught[idx] || balance < 20}
-              className="h-20 rounded-xl flex flex-col items-center justify-center text-3xl transition-all"
-              style={{
-                background: caught[idx]
-                  ? "oklch(0.15 0.05 285)"
-                  : "oklch(0.2 0.12 220)",
-                border: `2px solid ${caught[idx] ? "oklch(0.25 0.05 285)" : "oklch(0.55 0.2 220 / 0.6)"}`,
-                opacity: caught[idx] ? 0.4 : 1,
-                cursor: caught[idx] ? "not-allowed" : "pointer",
-              }}
-              data-ocid={`gamedemo.fish.button.${idx + 1}`}
-            >
-              {caught[idx] ? (
-                <>
-                  <span
-                    className="text-sm font-black"
-                    style={{ color: "oklch(0.85 0.18 50)" }}
-                  >
-                    {reveals[idx] !== null ? `PKR ${reveals[idx]}` : ""}
-                  </span>
-                  <span
-                    className="text-xs"
-                    style={{ color: "oklch(0.55 0.05 285)" }}
-                  >
-                    Caught!
-                  </span>
-                </>
-              ) : (
-                <>
-                  {fish.emoji}
-                  <span
-                    className="text-[10px] mt-1"
-                    style={{ color: "oklch(0.65 0.12 220)" }}
-                  >
-                    Shoot!
-                  </span>
-                </>
-              )}
-            </button>
-          ))}
-        </div>
-        {lastResult && (
-          <p
-            className="text-center font-bold text-sm"
-            style={{
-              color: lastResult.startsWith("+")
-                ? "oklch(0.75 0.2 130)"
-                : "oklch(0.65 0.2 50)",
-            }}
-          >
-            {lastResult}
-          </p>
-        )}
-        <p
-          className="text-[10px] text-center"
-          style={{ color: "oklch(0.45 0.04 285)" }}
-        >
-          Demo credits only · No real money
-        </p>
-      </div>
-    </>
-  );
-}
-
-// ---- Sports Betting ----
-const MATCHES = [
-  { team1: "Pakistan", team2: "India", odds1: 2.1, odds2: 1.8 },
-  { team1: "Lahore Qalandars", team2: "Karachi Kings", odds1: 1.9, odds2: 2.0 },
-  { team1: "Manchester United", team2: "Arsenal", odds1: 2.3, odds2: 1.7 },
-];
-
-function SportsGame() {
-  const [balance, setBalance] = useState(500);
-  const [matchIdx] = useState(() => Math.floor(Math.random() * MATCHES.length));
-  const match = MATCHES[matchIdx];
-  const [pick, setPick] = useState<1 | 2 | null>(null);
-  const [phase, setPhase] = useState<"idle" | "waiting" | "done">("idle");
-  const [result, setResult] = useState<string | null>(null);
-
-  function placeBet() {
-    if (!pick || balance < 100 || phase !== "idle") return;
-    setBalance((p) => p - 100);
-    setPhase("waiting");
-    setTimeout(() => {
-      const odds = pick === 1 ? match.odds1 : match.odds2;
-      const win = Math.random() < (1 / odds) * 0.85;
-      if (win) {
-        const gained = Math.floor(100 * odds);
-        setBalance((p) => p + gained);
-        setResult(
-          `${pick === 1 ? match.team1 : match.team2} Won! +PKR ${gained}`,
-        );
-      } else {
-        setResult(`${pick === 1 ? match.team2 : match.team1} Won! -PKR 100`);
-      }
-      setPhase("done");
-    }, 2000);
-  }
-
-  function reset() {
-    setPick(null);
-    setPhase("idle");
-    setResult(null);
-  }
-
-  return (
-    <>
-      <BalanceDisplay balance={balance} />
-      <div
-        className="rounded-2xl p-4 flex flex-col gap-3"
-        style={{
-          background:
-            "linear-gradient(135deg, oklch(0.14 0.1 140), oklch(0.1 0.08 160))",
-          border: "2px solid oklch(0.55 0.2 140 / 0.4)",
-        }}
-      >
-        <p
-          className="text-center font-bold text-sm"
-          style={{ color: "oklch(0.85 0.18 50)" }}
-        >
-          ⚽ {match.team1} vs {match.team2}
-        </p>
-        <div className="grid grid-cols-2 gap-2">
-          {[1, 2].map((t) => {
-            const team = t === 1 ? match.team1 : match.team2;
-            const odds = t === 1 ? match.odds1 : match.odds2;
-            const isSelected = pick === t;
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => phase === "idle" && setPick(t as 1 | 2)}
-                className="p-3 rounded-xl font-bold text-sm transition-all"
-                data-ocid={`gamedemo.team.button.${t}`}
-                style={{
-                  background: isSelected
-                    ? "oklch(0.55 0.2 140)"
-                    : "oklch(0.18 0.08 140)",
-                  border: `2px solid ${isSelected ? "oklch(0.65 0.22 140)" : "oklch(0.28 0.1 140 / 0.5)"}`,
-                  color: isSelected ? "black" : "oklch(0.75 0.1 140)",
-                }}
-              >
-                {team}
-                <br />
-                <span className="text-xs">{odds}x</span>
-              </button>
-            );
-          })}
-        </div>
-        {phase === "waiting" && (
-          <p
-            className="text-center text-sm animate-pulse"
-            style={{ color: "oklch(0.85 0.18 50)" }}
-          >
-            ⏳ Match in progress...
-          </p>
-        )}
-        {result && (
+        {phase === "result" && (
           <p
             className="text-center font-black"
             style={{
-              color: result.includes("+")
-                ? "oklch(0.75 0.2 130)"
-                : "oklch(0.65 0.25 20)",
+              color: resultMsg.includes("Win")
+                ? "oklch(0.75 0.2 140)"
+                : resultMsg.includes("Tie")
+                  ? "oklch(0.85 0.18 50)"
+                  : "oklch(0.65 0.25 27)",
             }}
           >
-            {result}
+            {resultMsg}
           </p>
         )}
-        {phase === "idle" && (
+        <div className="flex gap-2">
+          {[25, 50, 100, 200].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBet(v)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-black"
+              style={{
+                background:
+                  bet === v ? "oklch(0.5 0.2 150)" : "oklch(0.2 0.08 285)",
+                color: "white",
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+        {phase === "bet" && (
           <Button
             type="button"
-            onClick={placeBet}
-            disabled={!pick || balance < 100}
+            onClick={deal}
+            disabled={balance < bet}
             className="w-full h-11 font-black"
-            data-ocid="gamedemo.bet.button"
             style={{
               background:
-                !pick || balance < 100
-                  ? "oklch(0.35 0.05 285)"
-                  : "linear-gradient(135deg, oklch(0.55 0.22 140), oklch(0.45 0.2 160))",
-              color: !pick || balance < 100 ? "oklch(0.5 0.03 285)" : "white",
-            }}
-          >
-            {!pick
-              ? "Pick a team first"
-              : balance < 100
-                ? "No Balance"
-                : "Place Bet — PKR 100"}
-          </Button>
-        )}
-        {phase === "done" && (
-          <Button
-            type="button"
-            onClick={reset}
-            className="w-full h-11 font-black"
-            data-ocid="gamedemo.newmatch.button"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.55 0.18 285), oklch(0.45 0.15 285))",
+                "linear-gradient(135deg, oklch(0.5 0.2 150), oklch(0.4 0.22 130))",
               color: "white",
             }}
           >
-            New Match
+            🃏 DEAL — PKR {bet}
           </Button>
         )}
-        <p
-          className="text-[10px] text-center"
-          style={{ color: "oklch(0.45 0.04 285)" }}
-        >
-          Demo only · No real money
-        </p>
+        {phase === "playing" && (
+          <Button
+            type="button"
+            onClick={showdown}
+            className="w-full h-11 font-black"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.65 0.25 330), oklch(0.55 0.28 350))",
+              color: "white",
+            }}
+          >
+            Show Cards (Showdown)
+          </Button>
+        )}
+        {phase === "result" && (
+          <Button
+            type="button"
+            onClick={() => setPhase("bet")}
+            className="w-full h-11 font-black"
+            style={{ background: "oklch(0.35 0.05 285)", color: "white" }}
+          >
+            Play Again
+          </Button>
+        )}
       </div>
-    </>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
   );
 }
 
-// ---- Roulette (Live) ----
-const RED_NUMS = new Set([
+// ===================== LIVE ROULETTE DEMO =====================
+const RED_NUMS = [
   1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
-]);
+];
 
-function RouletteGame() {
+function LiveDemo() {
   const [balance, setBalance] = useState(500);
-  const [pick, setPick] = useState<{
-    type: "number" | "color";
-    value: number | string;
-  } | null>(null);
+  const [bet, setBet] = useState(50);
+  const [betOn, setBetOn] = useState<
+    "red" | "black" | "green" | "odd" | "even"
+  >("red");
   const [spinning, setSpinning] = useState(false);
-  const [landedOn, setLandedOn] = useState<number | null>(null);
-  const [result, setResult] = useState<string | null>(null);
+  const [msg, setMsg] = useState("");
+  const [spinDisplay, setSpinDisplay] = useState<number | null>(null);
 
   function spin() {
-    if (!pick || balance < 50 || spinning) return;
-    setBalance((p) => p - 50);
+    if (balance < bet || spinning) return;
+    setBalance((b) => b - bet);
     setSpinning(true);
-    setResult(null);
-    setTimeout(() => {
-      const num = Math.floor(Math.random() * 37);
-      setLandedOn(num);
-      setSpinning(false);
-      if (pick.type === "number" && pick.value === num) {
-        setBalance((p) => p + 1800);
-        setResult(`🎯 Hit ${num}! +PKR 1800`);
-      } else if (pick.type === "color") {
-        const color = num === 0 ? "Green" : RED_NUMS.has(num) ? "Red" : "Black";
-        if (pick.value === color) {
-          setBalance((p) => p + 200);
-          setResult(`✅ ${color}! +PKR 200`);
-        } else {
-          setResult(`❌ Landed ${num} (${color}) -PKR 50`);
-        }
-      } else {
-        setResult(`Landed on ${num} -PKR 50`);
+    setMsg("");
+    let ticks = 0;
+    const iv = setInterval(() => {
+      setSpinDisplay(Math.floor(Math.random() * 37));
+      ticks++;
+      if (ticks > 20) {
+        clearInterval(iv);
+        const landed = Math.floor(Math.random() * 37);
+        setSpinDisplay(landed);
+        setSpinning(false);
+        let won = false;
+        if (betOn === "green" && landed === 0) won = true;
+        else if (betOn === "red" && RED_NUMS.includes(landed)) won = true;
+        else if (betOn === "black" && landed > 0 && !RED_NUMS.includes(landed))
+          won = true;
+        else if (betOn === "odd" && landed > 0 && landed % 2 !== 0) won = true;
+        else if (betOn === "even" && landed > 0 && landed % 2 === 0) won = true;
+        if (won) {
+          const mult = betOn === "green" ? 35 : 2;
+          const win = bet * mult;
+          setBalance((b) => b + win);
+          setMsg(`✅ ${landed} — You Win! +PKR ${win}`);
+        } else setMsg(`❌ ${landed} — Lost PKR ${bet}`);
       }
-    }, 1800);
+    }, 80);
   }
 
+  const numColor = (n: number | null) =>
+    n === null
+      ? ""
+      : n === 0
+        ? "oklch(0.65 0.25 140)"
+        : RED_NUMS.includes(n)
+          ? "oklch(0.55 0.25 27)"
+          : "oklch(0.3 0.02 285)";
+
   return (
-    <>
-      <BalanceDisplay balance={balance} />
+    <div className="space-y-3">
       <div
-        className="rounded-2xl p-4 flex flex-col gap-3"
+        className="rounded-2xl p-4 space-y-3"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.14 0.1 20), oklch(0.1 0.08 350))",
-          border: "2px solid oklch(0.55 0.2 20 / 0.4)",
+            "linear-gradient(135deg, oklch(0.12 0.08 60), oklch(0.1 0.06 50))",
+          border: "2px solid oklch(0.55 0.2 50 / 0.4)",
         }}
       >
-        <div className="flex gap-2 justify-center">
-          {["Red", "Black", "Green"].map((c) => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setPick({ type: "color", value: c })}
-              data-ocid={"gamedemo.color.button"}
-              className="px-4 py-2 rounded-lg font-bold text-sm transition-all"
-              style={{
-                background:
-                  c === "Red"
-                    ? "oklch(0.5 0.25 20)"
-                    : c === "Black"
-                      ? "oklch(0.2 0.03 285)"
-                      : "oklch(0.4 0.2 145)",
-                border: `2px solid ${pick?.value === c ? "white" : "transparent"}`,
-                color: "white",
-                transform: pick?.value === c ? "scale(1.05)" : "scale(1)",
-              }}
-            >
-              {c} +{c === "Green" ? "x18" : "x2"}
-            </button>
-          ))}
-        </div>
-        <div className="grid grid-cols-9 gap-1">
-          {Array.from({ length: 37 }, (_, i) => i).map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setPick({ type: "number", value: n })}
-              data-ocid="gamedemo.number.button"
-              className="h-7 rounded text-[10px] font-black transition-all"
-              style={{
-                background:
-                  n === 0
-                    ? "oklch(0.4 0.2 145)"
-                    : RED_NUMS.has(n)
-                      ? "oklch(0.45 0.22 20)"
-                      : "oklch(0.2 0.03 285)",
-                border: `1px solid ${pick?.value === n ? "white" : "transparent"}`,
-                color: "white",
-                transform: pick?.value === n ? "scale(1.1)" : "scale(1)",
-              }}
-            >
-              {n}
-            </button>
-          ))}
-        </div>
-        {spinning && <p className="text-center animate-spin text-2xl">🎡</p>}
-        {landedOn !== null && !spinning && (
-          <p
-            className="text-center font-bold text-sm"
-            style={{ color: "oklch(0.85 0.18 50)" }}
+        <div className="flex items-center justify-center">
+          <div
+            className="w-24 h-24 rounded-full border-4 flex items-center justify-center text-3xl font-black"
+            style={{
+              borderColor: "oklch(0.85 0.18 50)",
+              background: numColor(spinDisplay ?? null),
+              color: "white",
+              transition: "background 0.1s",
+            }}
           >
-            Ball: {landedOn}
-          </p>
-        )}
-        {result && (
+            {spinDisplay ?? "?"}
+          </div>
+        </div>
+        {msg && (
           <p
             className="text-center font-black text-sm"
             style={{
-              color: result.includes("+")
-                ? "oklch(0.75 0.2 130)"
-                : "oklch(0.65 0.25 20)",
+              color: msg.includes("Win")
+                ? "oklch(0.75 0.2 140)"
+                : "oklch(0.65 0.25 27)",
             }}
           >
-            {result}
+            {msg}
           </p>
         )}
+        <div className="grid grid-cols-5 gap-1.5">
+          {(["red", "black", "green", "odd", "even"] as const).map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => setBetOn(opt)}
+              className="rounded-lg py-2 text-xs font-black capitalize"
+              style={{
+                background:
+                  betOn === opt
+                    ? opt === "red"
+                      ? "oklch(0.55 0.25 27)"
+                      : opt === "green"
+                        ? "oklch(0.55 0.25 140)"
+                        : opt === "black"
+                          ? "oklch(0.25 0.02 285)"
+                          : "oklch(0.6 0.25 270)"
+                    : "oklch(0.2 0.08 285)",
+                color: "white",
+                border:
+                  betOn === opt ? "2px solid white" : "2px solid transparent",
+              }}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          {[25, 50, 100, 200].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBet(v)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-black"
+              style={{
+                background:
+                  bet === v ? "oklch(0.6 0.25 50)" : "oklch(0.2 0.08 285)",
+                color: "white",
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
         <Button
           type="button"
           onClick={spin}
-          disabled={!pick || balance < 50 || spinning}
+          disabled={spinning || balance < bet}
           className="w-full h-11 font-black"
-          data-ocid="gamedemo.spin.button"
           style={{
             background:
-              !pick || balance < 50 || spinning
+              spinning || balance < bet
                 ? "oklch(0.35 0.05 285)"
-                : "linear-gradient(135deg, oklch(0.55 0.22 20), oklch(0.45 0.25 350))",
-            color:
-              !pick || balance < 50 || spinning
-                ? "oklch(0.5 0.03 285)"
-                : "white",
+                : "linear-gradient(135deg, oklch(0.65 0.25 50), oklch(0.55 0.28 60))",
+            color: "white",
           }}
         >
-          {spinning
-            ? "Spinning..."
-            : !pick
-              ? "Pick a number or color"
-              : balance < 50
-                ? "No Balance"
-                : "🎡 Spin — PKR 50"}
+          {spinning ? "Spinning..." : `🎡 SPIN — PKR ${bet}`}
         </Button>
       </div>
-    </>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
   );
 }
 
-// ---- Lottery / Keno ----
-function LotteryGame() {
-  const [balance, setBalance] = useState(500);
-  const [selected, setSelected] = useState<number[]>([]);
-  const [drawn, setDrawn] = useState<number[]>([]);
-  const [phase, setPhase] = useState<"pick" | "done">("pick");
-  const [result, setResult] = useState<string | null>(null);
+// ===================== SPORTS BETTING DEMO =====================
+const MATCHES = [
+  {
+    id: 1,
+    team1: "Pakistan",
+    team2: "India",
+    sport: "🏏",
+    odd1: 1.9,
+    odd2: 2.1,
+  },
+  {
+    id: 2,
+    team1: "Manchester Utd",
+    team2: "Arsenal",
+    sport: "⚽",
+    odd1: 2.4,
+    odd2: 1.7,
+  },
+  {
+    id: 3,
+    team1: "Karachi Kings",
+    team2: "Lahore Qalandars",
+    sport: "🏏",
+    odd1: 2.0,
+    odd2: 2.0,
+  },
+  {
+    id: 4,
+    team1: "Djokovic",
+    team2: "Alcaraz",
+    sport: "🎾",
+    odd1: 1.8,
+    odd2: 2.2,
+  },
+];
 
-  function toggleNum(n: number) {
+function SportsDemo() {
+  const [balance, setBalance] = useState(500);
+  const [selections, setSelections] = useState<
+    { matchId: number; team: string; odd: number }[]
+  >([]);
+  const [bet, setBet] = useState(50);
+  const [result, setResult] = useState("");
+
+  function select(matchId: number, team: string, odd: number) {
+    setSelections((prev) => {
+      const existing = prev.findIndex((s) => s.matchId === matchId);
+      if (existing >= 0) {
+        const n = [...prev];
+        n[existing] = { matchId, team, odd };
+        return n;
+      }
+      return [...prev, { matchId, team, odd }];
+    });
+  }
+
+  function placeBet() {
+    if (selections.length === 0 || balance < bet) return;
+    setBalance((b) => b - bet);
+    const win = Math.random() > 0.5;
+    const totalOdd = selections.reduce((a, s) => a * s.odd, 1);
+    if (win) {
+      const winAmt = Math.floor(bet * totalOdd);
+      setBalance((b) => b + winAmt);
+      setResult(`✅ Won! +PKR ${winAmt} (odds: ${totalOdd.toFixed(2)}x)`);
+    } else setResult(`❌ Lost PKR ${bet}. Better luck next time!`);
+    setSelections([]);
+  }
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="rounded-xl space-y-2"
+        style={{ maxHeight: 220, overflowY: "auto" }}
+      >
+        {MATCHES.map((m) => {
+          const sel = selections.find((s) => s.matchId === m.id);
+          return (
+            <div
+              key={m.id}
+              className="rounded-xl p-3"
+              style={{
+                background: "oklch(0.16 0.08 220)",
+                border: "1px solid oklch(0.3 0.1 220)",
+              }}
+            >
+              <p
+                className="text-xs font-bold text-center mb-2"
+                style={{ color: "oklch(0.75 0.05 285)" }}
+              >
+                {m.sport} {m.team1} vs {m.team2}
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => select(m.id, m.team1, m.odd1)}
+                  className="flex-1 rounded-lg py-2 text-xs font-black"
+                  style={{
+                    background:
+                      sel?.team === m.team1
+                        ? "oklch(0.55 0.25 220)"
+                        : "oklch(0.22 0.08 285)",
+                    color: "white",
+                    border:
+                      sel?.team === m.team1
+                        ? "2px solid white"
+                        : "2px solid transparent",
+                  }}
+                >
+                  {m.team1}
+                  <br />
+                  {m.odd1.toFixed(2)}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => select(m.id, m.team2, m.odd2)}
+                  className="flex-1 rounded-lg py-2 text-xs font-black"
+                  style={{
+                    background:
+                      sel?.team === m.team2
+                        ? "oklch(0.55 0.25 220)"
+                        : "oklch(0.22 0.08 285)",
+                    color: "white",
+                    border:
+                      sel?.team === m.team2
+                        ? "2px solid white"
+                        : "2px solid transparent",
+                  }}
+                >
+                  {m.team2}
+                  <br />
+                  {m.odd2.toFixed(2)}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      {result && (
+        <p
+          className="text-center font-black text-sm"
+          style={{
+            color: result.includes("Won")
+              ? "oklch(0.75 0.2 140)"
+              : "oklch(0.65 0.25 27)",
+          }}
+        >
+          {result}
+        </p>
+      )}
+      <div className="flex gap-2">
+        {[25, 50, 100, 200].map((v) => (
+          <button
+            key={v}
+            type="button"
+            onClick={() => setBet(v)}
+            className="flex-1 rounded-lg py-1.5 text-xs font-black"
+            style={{
+              background:
+                bet === v ? "oklch(0.6 0.25 220)" : "oklch(0.2 0.08 285)",
+              color: "white",
+            }}
+          >
+            {v}
+          </button>
+        ))}
+      </div>
+      <Button
+        type="button"
+        onClick={placeBet}
+        disabled={selections.length === 0 || balance < bet}
+        className="w-full h-11 font-black"
+        style={{
+          background:
+            selections.length === 0 || balance < bet
+              ? "oklch(0.35 0.05 285)"
+              : "linear-gradient(135deg, oklch(0.6 0.25 220), oklch(0.5 0.28 240))",
+          color: "white",
+        }}
+      >
+        ⚽ PLACE BET — PKR {bet} ({selections.length} selection
+        {selections.length !== 1 ? "s" : ""})
+      </Button>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
+// ===================== LOTTERY DEMO =====================
+function LotteryDemo() {
+  const [balance, setBalance] = useState(500);
+  const [picks, setPicks] = useState<number[]>([]);
+  const [drawn, setDrawn] = useState<number[]>([]);
+  const [phase, setPhase] = useState<"pick" | "result">("pick");
+  const [bet] = useState(50);
+
+  function togglePick(n: number) {
     if (phase !== "pick") return;
-    setSelected((prev) =>
+    setPicks((prev) =>
       prev.includes(n)
         ? prev.filter((x) => x !== n)
-        : prev.length < 3
+        : prev.length < 5
           ? [...prev, n]
           : prev,
     );
   }
 
   function draw() {
-    if (selected.length < 3 || balance < 50) return;
-    setBalance((p) => p - 50);
-    const pool = Array.from({ length: 20 }, (_, i) => i + 1).filter(
-      (n) => !selected.includes(n),
-    );
-    // pick 2 random non-selected + sometimes 1-3 selected
-    const drawNums: number[] = [];
-    const shuffled = [...selected, ...pool].sort(() => Math.random() - 0.5);
-    for (let i = 0; i < 5 && drawNums.length < 5; i++) {
-      if (!drawNums.includes(shuffled[i])) drawNums.push(shuffled[i]);
-    }
-    while (drawNums.length < 5) {
-      const x = pool[Math.floor(Math.random() * pool.length)];
-      if (!drawNums.includes(x)) drawNums.push(x);
-    }
-    setDrawn(drawNums);
-    const matches = selected.filter((n) => drawNums.includes(n)).length;
-    if (matches === 3) {
-      setBalance((p) => p + 500);
-      setResult("🏆 3 Matches! +PKR 500");
-    } else if (matches === 2) {
-      setBalance((p) => p + 100);
-      setResult("🎉 2 Matches! +PKR 100");
-    } else if (matches === 1) {
-      setBalance((p) => p + 20);
-      setResult("✨ 1 Match! +PKR 20");
-    } else {
-      setResult("-PKR 50. No matches!");
-    }
-    setPhase("done");
+    if (picks.length < 5 || balance < bet) return;
+    setBalance((b) => b - bet);
+    const nums = Array.from({ length: 25 }, (_, i) => i + 1);
+    const shuffled = nums.sort(() => Math.random() - 0.5).slice(0, 5);
+    setDrawn(shuffled);
+    setPhase("result");
+    const matches = picks.filter((p) => shuffled.includes(p)).length;
+    if (matches >= 5) setBalance((b) => b + 5000);
+    else if (matches >= 4) setBalance((b) => b + 500);
+    else if (matches >= 3) setBalance((b) => b + 150);
+    else if (matches >= 2) setBalance((b) => b + 75);
   }
 
   function reset() {
-    setSelected([]);
+    setPicks([]);
     setDrawn([]);
     setPhase("pick");
-    setResult(null);
   }
 
+  const matches = drawn.length
+    ? picks.filter((p) => drawn.includes(p)).length
+    : 0;
+
   return (
-    <>
-      <BalanceDisplay balance={balance} />
+    <div className="space-y-3">
       <div
-        className="rounded-2xl p-4 flex flex-col gap-3"
+        className="rounded-2xl p-3"
         style={{
           background:
-            "linear-gradient(135deg, oklch(0.14 0.12 270), oklch(0.1 0.08 290))",
-          border: "2px solid oklch(0.55 0.2 270 / 0.4)",
+            "linear-gradient(135deg, oklch(0.12 0.1 60), oklch(0.1 0.08 80))",
+          border: "2px solid oklch(0.55 0.25 60 / 0.4)",
         }}
       >
         <p
-          className="text-xs text-center"
-          style={{ color: "oklch(0.65 0.15 270)" }}
+          className="text-xs font-bold text-center mb-2"
+          style={{ color: "oklch(0.75 0.05 285)" }}
         >
-          Pick 3 numbers (1-20) · Cost: PKR 50
+          {phase === "pick" ? `Pick 5 numbers (${picks.length}/5)` : "Results"}
         </p>
         <div className="grid grid-cols-5 gap-1.5">
-          {Array.from({ length: 20 }, (_, i) => i + 1).map((n) => {
-            const isSelected = selected.includes(n);
+          {Array.from({ length: 25 }, (_, i) => i + 1).map((n) => {
+            const isPicked = picks.includes(n);
             const isDrawn = drawn.includes(n);
-            const isMatch = isSelected && isDrawn;
+            const isMatch = isPicked && isDrawn;
             return (
               <button
                 key={n}
                 type="button"
-                onClick={() => toggleNum(n)}
-                data-ocid="gamedemo.lottery.button"
-                className="h-9 rounded-lg font-black text-sm transition-all"
+                onClick={() => togglePick(n)}
+                className="rounded-full aspect-square flex items-center justify-center text-xs font-black transition-all"
                 style={{
                   background: isMatch
-                    ? "oklch(0.55 0.25 130)"
-                    : isDrawn
-                      ? "oklch(0.5 0.2 50)"
-                      : isSelected
-                        ? "oklch(0.55 0.2 270)"
-                        : "oklch(0.2 0.08 270)",
-                  border: `1px solid ${isSelected ? "oklch(0.7 0.2 270)" : "transparent"}`,
+                    ? "oklch(0.75 0.25 130)"
+                    : isDrawn && phase === "result"
+                      ? "oklch(0.65 0.25 27)"
+                      : isPicked
+                        ? "oklch(0.65 0.25 270)"
+                        : "oklch(0.2 0.08 285)",
                   color: "white",
-                  transform: isSelected ? "scale(1.05)" : "scale(1)",
+                  transform: isMatch ? "scale(1.15)" : "scale(1)",
                 }}
               >
                 {n}
@@ -1020,104 +1273,82 @@ function LotteryGame() {
             );
           })}
         </div>
-        {drawn.length > 0 && (
+        {phase === "result" && (
           <p
-            className="text-xs text-center"
-            style={{ color: "oklch(0.75 0.15 50)" }}
-          >
-            Drawn: {drawn.join(", ")}
-          </p>
-        )}
-        {result && (
-          <p
-            className="text-center font-black text-sm"
+            className="text-center font-black text-sm mt-2"
             style={{
-              color: result.includes("+")
-                ? "oklch(0.75 0.2 130)"
-                : "oklch(0.65 0.25 20)",
-            }}
-          >
-            {result}
-          </p>
-        )}
-        {phase === "pick" ? (
-          <Button
-            type="button"
-            onClick={draw}
-            disabled={selected.length < 3 || balance < 50}
-            className="w-full h-11 font-black"
-            data-ocid="gamedemo.draw.button"
-            style={{
-              background:
-                selected.length < 3 || balance < 50
-                  ? "oklch(0.35 0.05 285)"
-                  : "linear-gradient(135deg, oklch(0.55 0.22 270), oklch(0.45 0.2 290))",
               color:
-                selected.length < 3 || balance < 50
-                  ? "oklch(0.5 0.03 285)"
-                  : "white",
+                matches >= 3 ? "oklch(0.75 0.2 140)" : "oklch(0.65 0.05 285)",
             }}
           >
-            {selected.length < 3
-              ? `Pick ${3 - selected.length} more`
-              : balance < 50
-                ? "No Balance"
-                : "🎱 Draw! — PKR 50"}
-          </Button>
-        ) : (
-          <Button
-            type="button"
-            onClick={reset}
-            className="w-full h-11 font-black"
-            data-ocid="gamedemo.newround.button"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.55 0.18 285), oklch(0.45 0.15 285))",
-              color: "white",
-            }}
-          >
-            Play Again
-          </Button>
+            {matches >= 5
+              ? "🎉 JACKPOT! +PKR 5000"
+              : matches >= 4
+                ? `🎊 ${matches} matches! +PKR 500`
+                : matches >= 3
+                  ? `✅ ${matches} matches! +PKR 150`
+                  : matches >= 2
+                    ? `💚 ${matches} matches! +PKR 75`
+                    : `❌ ${matches} match. Try again!`}
+          </p>
         )}
       </div>
-    </>
-  );
-}
-
-// ---- Shared Balance Display ----
-function BalanceDisplay({ balance }: { balance: number }) {
-  return (
-    <div
-      className="rounded-xl px-4 py-2 flex items-center justify-between"
-      style={{
-        background: "oklch(0.11 0.07 285)",
-        border: "1px solid oklch(0.25 0.08 285)",
-      }}
-    >
-      <span
-        className="text-xs font-bold"
-        style={{ color: "oklch(0.60 0.05 285)" }}
+      {phase === "pick" ? (
+        <Button
+          type="button"
+          onClick={draw}
+          disabled={picks.length < 5 || balance < bet}
+          className="w-full h-11 font-black"
+          style={{
+            background:
+              picks.length < 5 || balance < bet
+                ? "oklch(0.35 0.05 285)"
+                : "linear-gradient(135deg, oklch(0.65 0.25 60), oklch(0.55 0.28 80))",
+            color: "black",
+          }}
+        >
+          🎟 DRAW — PKR {bet}
+        </Button>
+      ) : (
+        <Button
+          type="button"
+          onClick={reset}
+          className="w-full h-11 font-black"
+          style={{ background: "oklch(0.35 0.05 285)", color: "white" }}
+        >
+          Play Again
+        </Button>
+      )}
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
       >
-        Demo Balance
-      </span>
-      <span
-        className="font-black text-lg"
-        style={{ color: "oklch(0.85 0.18 50)" }}
-      >
-        PKR {balance.toLocaleString()}
-      </span>
+        Balance: PKR {balance.toLocaleString()}
+      </div>
     </div>
   );
 }
 
-// ---- Main Modal ----
+// ===================== MAIN MODAL =====================
 export function GameDemoModal({
   open,
   onClose,
   gameName,
   provider,
-  gameCategory,
 }: GameDemoModalProps) {
+  const gameType = getGameType(provider, gameName);
+  const slotConfig = SLOT_CONFIGS[gameName];
+
+  const gameTypeLabels: Record<string, string> = {
+    slots: "Slots",
+    crash: "Crash Game",
+    fishing: "Fishing",
+    card: "Card Game",
+    live: "Live Casino",
+    sports: "Sports Betting",
+    lottery: "Lottery",
+  };
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent
@@ -1148,24 +1379,24 @@ export function GameDemoModal({
             </span>
           </div>
           <p className="text-xs" style={{ color: "oklch(0.60 0.05 285)" }}>
-            {provider}
+            {provider} · {gameTypeLabels[gameType]}
           </p>
         </DialogHeader>
-        {gameCategory === "crash" ? (
-          <CrashGame />
-        ) : gameCategory === "card" ? (
-          <CardGame />
-        ) : gameCategory === "fishing" ? (
-          <FishingGame />
-        ) : gameCategory === "sports" ? (
-          <SportsGame />
-        ) : gameCategory === "live" ? (
-          <RouletteGame />
-        ) : gameCategory === "lottery" ? (
-          <LotteryGame />
-        ) : (
-          <SlotGame />
-        )}
+
+        {gameType === "slots" && <SlotsDemo config={slotConfig} />}
+        {gameType === "crash" && <CrashDemo />}
+        {gameType === "fishing" && <FishingDemo />}
+        {gameType === "card" && <CardDemo />}
+        {gameType === "live" && <LiveDemo />}
+        {gameType === "sports" && <SportsDemo />}
+        {gameType === "lottery" && <LotteryDemo />}
+
+        <p
+          className="text-[10px] text-center"
+          style={{ color: "oklch(0.45 0.04 285)" }}
+        >
+          Demo mode · No real money involved
+        </p>
       </DialogContent>
     </Dialog>
   );

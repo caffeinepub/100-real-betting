@@ -13,6 +13,11 @@ interface ReferralModalProps {
   onClose: () => void;
   username: string;
   referralCount: number;
+  referredMembers?: Array<{
+    username: string;
+    name: string;
+    joinedAt?: string;
+  }>;
 }
 
 export function ReferralModal({
@@ -20,6 +25,7 @@ export function ReferralModal({
   onClose,
   username,
   referralCount,
+  referredMembers = [],
 }: ReferralModalProps) {
   const referralLink = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(username)}`;
 
@@ -104,6 +110,61 @@ export function ReferralModal({
             </p>
           </div>
         </div>
+
+        {/* Referred Members List */}
+        {referredMembers.length > 0 && (
+          <div className="space-y-2">
+            <p
+              className="text-xs font-bold uppercase tracking-wider"
+              style={{ color: "oklch(0.60 0.06 285)" }}
+            >
+              Your Referred Members ({referredMembers.length})
+            </p>
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {referredMembers.map((m, i) => (
+                <div
+                  key={m.username}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2"
+                  data-ocid={`referral.item.${i + 1}`}
+                  style={{
+                    background: "oklch(0.80 0.18 130 / 0.08)",
+                    border: "1px solid oklch(0.80 0.18 130 / 0.2)",
+                  }}
+                >
+                  <span
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0"
+                    style={{
+                      background: "oklch(0.80 0.18 130 / 0.25)",
+                      color: "oklch(0.80 0.18 130)",
+                    }}
+                  >
+                    {i + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="text-sm font-bold truncate"
+                      style={{ color: "oklch(0.88 0.04 285)" }}
+                    >
+                      {m.name}
+                    </p>
+                    <p
+                      className="text-xs"
+                      style={{ color: "oklch(0.55 0.05 285)" }}
+                    >
+                      @{m.username}
+                    </p>
+                  </div>
+                  <span
+                    className="text-xs font-black"
+                    style={{ color: "oklch(0.85 0.18 50)" }}
+                  >
+                    +PKR 200
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Referral Link */}
         <div className="space-y-2">

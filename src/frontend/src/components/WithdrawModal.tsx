@@ -36,8 +36,8 @@ export function WithdrawModal({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const num = Number(amount);
-    if (!amount || Number.isNaN(num) || num < 500) {
-      toast.error("Minimum withdrawal is PKR 500");
+    if (!amount || Number.isNaN(num) || num < 10000) {
+      toast.error("Minimum withdrawal is PKR 10,000");
       return;
     }
     if (!account.match(/^03\d{9}$/)) {
@@ -85,7 +85,7 @@ export function WithdrawModal({
             Withdraw Funds
           </DialogTitle>
           <p className="text-muted-foreground text-center text-sm">
-            Minimum withdrawal: PKR 500
+            Minimum withdrawal: PKR 10,000
           </p>
         </DialogHeader>
 
@@ -119,10 +119,10 @@ export function WithdrawModal({
             </Label>
             <Input
               type="number"
-              min={500}
+              min={10000}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount (min 500)"
+              placeholder="Enter amount (min 10,000)"
               data-ocid="withdraw.input"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
