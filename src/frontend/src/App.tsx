@@ -368,7 +368,7 @@ export default function App() {
 
       <main className="flex-1">
         {page !== "lobby" && page !== "admin" && (
-          <div className="md:hidden px-4 pt-3 pb-1">
+          <div className="px-4 pt-3 pb-1">
             <button
               type="button"
               data-ocid="nav.back_button"
