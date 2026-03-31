@@ -124,11 +124,12 @@ export function Header({
               type="button"
               onClick={onOpenAPK}
               data-ocid="header.download.button"
-              className="hidden sm:flex items-center gap-1.5 font-black text-black text-sm px-3 h-9"
+              className="hidden sm:flex items-center gap-1.5 font-black !text-black text-sm px-3 h-9"
               style={{
                 background:
                   "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.78 0.22 60))",
                 boxShadow: "0 2px 10px oklch(0.85 0.18 50 / 0.35)",
+                color: "#000000",
               }}
             >
               <Download size={14} />
@@ -141,7 +142,8 @@ export function Header({
                   type="button"
                   onClick={onOpenLogin}
                   data-ocid="header.login.button"
-                  className="bg-pink-accent hover:bg-pink-accent/90 text-black font-black text-sm px-4 h-9"
+                  className="bg-pink-accent hover:bg-pink-accent/90 !text-black font-black text-sm px-4 h-9"
+                  style={{ color: "#000000" }}
                 >
                   Login
                 </Button>
@@ -149,7 +151,8 @@ export function Header({
                   type="button"
                   onClick={onOpenRegister}
                   data-ocid="header.register.button"
-                  className="bg-cyan-accent hover:bg-cyan-accent/90 text-black font-black text-sm px-4 h-9"
+                  className="bg-cyan-accent hover:bg-cyan-accent/90 !text-black font-black text-sm px-4 h-9"
+                  style={{ color: "#000000" }}
                 >
                   Register
                 </Button>
@@ -157,7 +160,6 @@ export function Header({
             ) : (
               <>
                 {!user.isAdmin && (
-                  /* Balance pill — clickable, goes to balance sheet */
                   <button
                     type="button"
                     onClick={onOpenBalance}
@@ -182,7 +184,8 @@ export function Header({
                       type="button"
                       onClick={onOpenDeposit}
                       data-ocid="header.deposit.button"
-                      className="bg-gold hover:bg-gold/90 text-black font-black text-sm px-4 h-9"
+                      className="bg-gold hover:bg-gold/90 !text-black font-black text-sm px-4 h-9"
+                      style={{ color: "#000000" }}
                     >
                       Deposit
                     </Button>
@@ -190,7 +193,8 @@ export function Header({
                       type="button"
                       onClick={onOpenWithdraw}
                       data-ocid="header.withdraw.button"
-                      className="bg-green-neon hover:bg-green-neon/90 text-black font-black text-sm px-3 h-9"
+                      className="bg-green-neon hover:bg-green-neon/90 !text-black font-black text-sm px-3 h-9"
+                      style={{ color: "#000000" }}
                     >
                       Withdraw
                     </Button>
@@ -198,8 +202,11 @@ export function Header({
                       type="button"
                       onClick={onOpenReferral}
                       data-ocid="header.referral.button"
-                      className="hidden sm:flex items-center gap-1.5 font-black text-black text-sm px-3 h-9"
-                      style={{ background: "oklch(0.80 0.18 130)" }}
+                      className="hidden sm:flex items-center gap-1.5 font-black !text-black text-sm px-3 h-9"
+                      style={{
+                        background: "oklch(0.80 0.18 130)",
+                        color: "#000000",
+                      }}
                     >
                       <Gift size={14} />
                       Refer &amp; Earn
@@ -290,10 +297,11 @@ export function Header({
             type="button"
             onClick={onOpenAPK}
             data-ocid="mobile.download.button"
-            className="px-3 py-1.5 rounded-md text-xs font-black whitespace-nowrap transition-all flex items-center gap-1 text-black"
+            className="px-3 py-1.5 rounded-md text-xs font-black whitespace-nowrap transition-all flex items-center gap-1"
             style={{
               background:
                 "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.78 0.22 60))",
+              color: "#000000",
             }}
           >
             <Download size={11} />
