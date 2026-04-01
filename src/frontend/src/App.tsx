@@ -9,6 +9,7 @@ import { LoginModal } from "./components/LoginModal";
 import { NotificationsPanel } from "./components/NotificationsPanel";
 import { ReferralModal } from "./components/ReferralModal";
 import { RegisterModal } from "./components/RegisterModal";
+import { WelcomePopup } from "./components/WelcomePopup";
 import { WithdrawModal } from "./components/WithdrawModal";
 import { AdminPanel } from "./pages/AdminPanel";
 import { BalancePage } from "./pages/BalancePage";
@@ -85,7 +86,11 @@ function useLocalState<T>(key: string, defaultValue: T) {
           ? (updater as (prev: T) => T)(prev)
           : updater;
       try {
-        localStorage.setItem(key, JSON.stringify(next));
+        if (next === null || next === undefined) {
+          localStorage.removeItem(key);
+        } else {
+          localStorage.setItem(key, JSON.stringify(next));
+        }
       } catch {}
       return next;
     });
@@ -96,6 +101,7 @@ function useLocalState<T>(key: string, defaultValue: T) {
 
 export default function App() {
   const [page, setPage] = useState<Page>("lobby");
+  const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
   // Read ?ref= from URL on first mount
   const [initialReferralCode] = useState<string>(
@@ -136,6 +142,16 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
+
+  // Sync restored session balance with registeredUsers on refresh
+  useEffect(() => {
+    if (user && !user.isAdmin) {
+      const found = registeredUsers.find((u) => u.username === user.username);
+      if (found && found.balance !== user.balance) {
+        setUser((prev) => (prev ? { ...prev, balance: found.balance } : prev));
+      }
+    }
+  }, [registeredUsers, user, setUser]);
 
   const notifications =
     user && !user.isAdmin ? (userNotifications[user.username] ?? []) : [];
@@ -217,6 +233,9 @@ export default function App() {
     };
     setUser(newUser);
     setModal("none");
+    if (!localStorage.getItem("100real_welcome_dismissed")) {
+      setShowWelcomePopup(true);
+    }
 
     addNotificationForUser(data.username, {
       type: "system",
@@ -266,6 +285,9 @@ export default function App() {
         balance: found.balance,
       });
       setModal("none");
+      if (!localStorage.getItem("100real_welcome_dismissed")) {
+        setShowWelcomePopup(true);
+      }
       return true;
     }
     return false;
@@ -457,6 +479,11 @@ export default function App() {
       <APKDownloadModal
         open={modal === "apk"}
         onClose={() => setModal("none")}
+      />
+
+      <WelcomePopup
+        open={showWelcomePopup}
+        onClose={() => setShowWelcomePopup(false)}
       />
     </div>
   );
