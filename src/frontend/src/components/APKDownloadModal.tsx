@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Download } from "lucide-react";
+import { Copy, Download, Smartphone } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
@@ -33,11 +33,35 @@ export function APKDownloadModal({ open, onClose }: APKDownloadModalProps) {
       deferredPromptRef.current.prompt();
     } else {
       toast.info(
-        "Open this site in Chrome on Android → tap ⋮ menu → 'Add to Home Screen' to install the app",
+        "Open this site in Chrome on Android → tap ⋮ menu → 'Add to Home Screen'",
         { duration: 7000 },
       );
     }
   }
+
+  function handleCopyLink() {
+    navigator.clipboard
+      .writeText(window.location.href)
+      .then(() =>
+        toast.success("App link copied! Share it to install on any device 🎉"),
+      )
+      .catch(() => toast.error("Could not copy link"));
+  }
+
+  const steps = [
+    {
+      num: 1,
+      icon: "🌐",
+      text: "Open this site in Chrome browser on your Android phone",
+    },
+    { num: 2, icon: "⋮", text: "Tap the ⋮ menu (three dots) at top right" },
+    { num: 3, icon: "📲", text: 'Tap "Add to Home Screen"' },
+    {
+      num: 4,
+      icon: "🎉",
+      text: '"Add" — app installs instantly on your home screen!',
+    },
+  ];
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -54,14 +78,21 @@ export function APKDownloadModal({ open, onClose }: APKDownloadModalProps) {
             className="font-display text-2xl text-center"
             style={{ color: "oklch(0.85 0.18 50)" }}
           >
-            Download 100%Real App
+            Install 100%Real App
           </DialogTitle>
+          <p
+            className="text-center text-sm"
+            style={{ color: "oklch(0.60 0.05 285)" }}
+          >
+            Works exactly like an APK — full screen, home screen icon, no
+            browser bar
+          </p>
         </DialogHeader>
 
-        {/* Android Icon */}
-        <div className="flex flex-col items-center gap-3 py-4">
+        {/* Icon */}
+        <div className="flex justify-center py-2">
           <div
-            className="w-24 h-24 rounded-3xl flex items-center justify-center text-6xl"
+            className="w-20 h-20 rounded-3xl flex items-center justify-center"
             style={{
               background:
                 "linear-gradient(135deg, oklch(0.22 0.12 285), oklch(0.18 0.09 285))",
@@ -69,18 +100,7 @@ export function APKDownloadModal({ open, onClose }: APKDownloadModalProps) {
               boxShadow: "0 0 30px oklch(0.85 0.18 50 / 0.2)",
             }}
           >
-            🤖
-          </div>
-          <div className="text-center">
-            <p
-              className="font-black text-lg"
-              style={{ color: "oklch(0.90 0.03 285)" }}
-            >
-              Android App
-            </p>
-            <p className="text-sm" style={{ color: "oklch(0.60 0.05 285)" }}>
-              Version 1.0 · Free Download
-            </p>
+            <Smartphone size={40} style={{ color: "oklch(0.85 0.18 50)" }} />
           </div>
         </div>
 
@@ -97,10 +117,10 @@ export function APKDownloadModal({ open, onClose }: APKDownloadModalProps) {
           }}
         >
           <Download size={22} />
-          Install App / Download APK
+          Install on Android
         </Button>
 
-        {/* Instructions */}
+        {/* Steps */}
         <div
           className="rounded-xl p-4 space-y-3 border"
           style={{
@@ -113,68 +133,86 @@ export function APKDownloadModal({ open, onClose }: APKDownloadModalProps) {
             className="text-xs font-bold uppercase tracking-wider"
             style={{ color: "oklch(0.75 0.2 195)" }}
           >
-            Installation Steps
+            How to Install — Step by Step
           </p>
-          {[
-            { step: 1, text: 'Tap "Install App / Download APK" above' },
-            { step: 2, text: "Open Chrome on Android and visit this site" },
-            {
-              step: 3,
-              text: "Tap the ⋮ menu → 'Add to Home Screen' to install",
-            },
-            { step: 4, text: "App will appear on your home screen. Enjoy! 🎰" },
-          ].map(({ step, text }) => (
-            <div key={step} className="flex items-start gap-3">
+          {steps.map(({ num, icon, text }) => (
+            <div key={text} className="flex items-start gap-3">
               <span
-                className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 mt-0.5"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-sm font-black flex-shrink-0 mt-0.5"
                 style={{
-                  background: "oklch(0.75 0.2 195 / 0.2)",
-                  color: "oklch(0.75 0.2 195)",
-                  border: "1px solid oklch(0.75 0.2 195 / 0.4)",
+                  background: "oklch(0.85 0.18 50 / 0.15)",
+                  color: "oklch(0.85 0.18 50)",
+                  border: "1px solid oklch(0.85 0.18 50 / 0.35)",
                 }}
               >
-                {step}
+                {num}
               </span>
-              <p className="text-sm" style={{ color: "oklch(0.72 0.04 285)" }}>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "oklch(0.75 0.04 285)" }}
+              >
+                <span className="mr-1">{icon}</span>
                 {text}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Manual APK section */}
+        {/* Copy Link */}
+        <Button
+          type="button"
+          onClick={handleCopyLink}
+          variant="outline"
+          className="w-full h-11 font-bold flex items-center gap-2"
+          data-ocid="apk.copy.button"
+          style={{
+            borderColor: "oklch(0.75 0.2 195 / 0.4)",
+            color: "oklch(0.75 0.2 195)",
+            background: "oklch(0.75 0.2 195 / 0.06)",
+          }}
+        >
+          <Copy size={16} />
+          Copy App Link to Share
+        </Button>
+
+        {/* PWA note */}
         <div
-          className="rounded-xl p-4 border"
+          className="rounded-xl p-3 border text-center"
+          style={{
+            background: "oklch(0.10 0.06 285)",
+            borderColor: "oklch(0.22 0.07 285)",
+          }}
+        >
+          <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
+            ✅ This is a{" "}
+            <span
+              className="font-bold"
+              style={{ color: "oklch(0.70 0.06 285)" }}
+            >
+              PWA app
+            </span>{" "}
+            — installs directly from Chrome, no APK file needed
+          </p>
+        </div>
+
+        {/* iOS */}
+        <div
+          className="rounded-xl p-3 border text-center"
           style={{
             background: "oklch(0.10 0.06 285)",
             borderColor: "oklch(0.22 0.07 285)",
           }}
         >
           <p
-            className="text-xs font-bold uppercase tracking-wider mb-2"
-            style={{ color: "oklch(0.65 0.18 50)" }}
-          >
-            Manual APK Install
-          </p>
-          <p className="text-sm" style={{ color: "oklch(0.60 0.04 285)" }}>
-            APK file coming soon. Use &apos;Add to Home Screen&apos; on Android
-            Chrome for the best experience.
-          </p>
-        </div>
-
-        {/* iOS note */}
-        <p
-          className="text-center text-sm"
-          style={{ color: "oklch(0.55 0.05 285)" }}
-        >
-          🍎{" "}
-          <span
-            className="font-semibold"
+            className="text-xs font-semibold mb-1"
             style={{ color: "oklch(0.65 0.06 285)" }}
           >
-            iOS version coming soon
-          </span>
-        </p>
+            🍎 iPhone / iPad
+          </p>
+          <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
+            Open in Safari → tap the Share icon → "Add to Home Screen"
+          </p>
+        </div>
       </DialogContent>
     </Dialog>
   );

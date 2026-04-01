@@ -5,11 +5,13 @@ import { APKDownloadModal } from "./components/APKDownloadModal";
 import { DepositModal } from "./components/DepositModal";
 import { Footer } from "./components/Footer";
 import { Header } from "./components/Header";
+import { HelplineChat } from "./components/HelplineChat";
 import { LoginModal } from "./components/LoginModal";
 import { NotificationsPanel } from "./components/NotificationsPanel";
 import { ReferralModal } from "./components/ReferralModal";
 import { RegisterModal } from "./components/RegisterModal";
 import { WelcomePopup } from "./components/WelcomePopup";
+import { WhatsAppButton } from "./components/WhatsAppButton";
 import { WithdrawModal } from "./components/WithdrawModal";
 import { AdminPanel } from "./pages/AdminPanel";
 import { BalancePage } from "./pages/BalancePage";
@@ -67,13 +69,49 @@ export type TransactionRequest = {
   accountNumber?: string;
 };
 
+export type GameActivity = {
+  id: string;
+  username: string;
+  type: "win" | "loss";
+  gameName: string;
+  amount: number;
+  timestamp: string;
+};
+
+export type SupportMessage = {
+  id: string;
+  from: "user" | "admin";
+  senderName: string;
+  text: string;
+  timestamp: string;
+};
+
+export type SupportTicket = {
+  id: string;
+  username: string;
+  displayName: string;
+  status: "open" | "closed";
+  createdAt: string;
+  messages: SupportMessage[];
+};
+
 const REFERRAL_BONUS_PKR = 200;
 
 function useLocalState<T>(key: string, defaultValue: T) {
   const [state, setState] = useState<T>(() => {
     try {
-      const stored = localStorage.getItem(key);
-      return stored ? (JSON.parse(stored) as T) : defaultValue;
+      const stored = localStorage.getItem(key) ?? sessionStorage.getItem(key);
+      if (stored) {
+        const parsed = JSON.parse(stored) as T;
+        try {
+          localStorage.setItem(key, stored);
+        } catch {}
+        try {
+          sessionStorage.setItem(key, stored);
+        } catch {}
+        return parsed;
+      }
+      return defaultValue;
     } catch {
       return defaultValue;
     }
@@ -88,8 +126,11 @@ function useLocalState<T>(key: string, defaultValue: T) {
       try {
         if (next === null || next === undefined) {
           localStorage.removeItem(key);
+          sessionStorage.removeItem(key);
         } else {
-          localStorage.setItem(key, JSON.stringify(next));
+          const serialized = JSON.stringify(next);
+          localStorage.setItem(key, serialized);
+          sessionStorage.setItem(key, serialized);
         }
       } catch {}
       return next;
@@ -103,7 +144,6 @@ export default function App() {
   const [page, setPage] = useState<Page>("lobby");
   const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
-  // Read ?ref= from URL on first mount
   const [initialReferralCode] = useState<string>(
     () => getUrlParameter("ref") ?? "",
   );
@@ -121,13 +161,22 @@ export default function App() {
   const [transactionRequests, setTransactionRequests] = useLocalState<
     TransactionRequest[]
   >("app_transactions", []);
+  const [gameActivity, _setGameActivity] = useLocalState<GameActivity[]>(
+    "app_game_activity",
+    [],
+  );
+  const [supportTickets, setSupportTickets] = useLocalState<SupportTicket[]>(
+    "app_support_tickets",
+    [],
+  );
+  const [referralBonuses, setReferralBonuses] = useLocalState<
+    Record<string, number>
+  >("app_referral_bonuses", {});
 
-  // Push history entry whenever page or modal changes
   useEffect(() => {
     history.pushState({ page, modal }, "");
   }, [page, modal]);
 
-  // Handle Android/browser back button via popstate
   useEffect(() => {
     function handlePopState(e: PopStateEvent) {
       const state = e.state as { page?: Page; modal?: ModalState } | null;
@@ -143,7 +192,6 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  // Sync restored session balance with registeredUsers on refresh
   useEffect(() => {
     if (user && !user.isAdmin) {
       const found = registeredUsers.find((u) => u.username === user.username);
@@ -169,6 +217,20 @@ export default function App() {
         .filter((u) => u.referralCode === user.username)
         .map((u) => ({ username: u.username, name: u.name, joinedAt: "" }))
     : [];
+
+  // Compute deposit/withdrawal flags for current user
+  const hasDeposited = transactionRequests.some(
+    (r) =>
+      r.username === user?.username &&
+      r.type === "deposit" &&
+      r.status === "approved",
+  );
+  const hasWithdrawnBefore = transactionRequests.some(
+    (r) =>
+      r.username === user?.username &&
+      r.type === "withdrawal" &&
+      r.status === "approved",
+  );
 
   function markRead(id: string) {
     if (!user) return;
@@ -343,6 +405,31 @@ export default function App() {
         return { ...prev, balance: Math.max(0, (prev.balance ?? 0) + delta) };
       });
 
+      // 10% referral bonus to referrer on deposit approval
+      if (req.type === "deposit") {
+        const depositor = registeredUsers.find(
+          (u) => u.username === req.username,
+        );
+        if (depositor?.referralCode) {
+          const referrer = registeredUsers.find(
+            (u) => u.username === depositor.referralCode,
+          );
+          if (referrer) {
+            const bonus = Math.floor(req.amount * 0.1);
+            setReferralBonuses((prev) => ({
+              ...prev,
+              [referrer.username]: (prev[referrer.username] ?? 0) + bonus,
+            }));
+            addNotificationForUser(referrer.username, {
+              type: "promo",
+              title: "🎁 Referral Bonus Earned!",
+              detail: `You earned PKR ${bonus.toLocaleString()} (10% of your referral's deposit). Open Refer & Earn to claim!`,
+              icon: "🎁",
+            });
+          }
+        }
+      }
+
       addNotificationForUser(req.username, {
         type: req.type === "deposit" ? "deposit" : "withdrawal",
         title:
@@ -366,6 +453,86 @@ export default function App() {
         icon: "❌",
       });
     }
+  }
+
+  function handleSendSupportMessage(
+    ticketId: string | null,
+    username: string,
+    displayName: string,
+    text: string,
+  ) {
+    const newMsg: SupportMessage = {
+      id: `msg-${Date.now()}`,
+      from: "user",
+      senderName: displayName,
+      text,
+      timestamp: new Date().toISOString(),
+    };
+    setSupportTickets((prev) => {
+      if (ticketId) {
+        return prev.map((t) =>
+          t.id === ticketId ? { ...t, messages: [...t.messages, newMsg] } : t,
+        );
+      }
+      const existing = prev.find(
+        (t) => t.username === username && t.status === "open",
+      );
+      if (existing) {
+        return prev.map((t) =>
+          t.id === existing.id
+            ? { ...t, messages: [...t.messages, newMsg] }
+            : t,
+        );
+      }
+      const newTicket: SupportTicket = {
+        id: `ticket-${Date.now()}`,
+        username,
+        displayName,
+        status: "open",
+        createdAt: new Date().toISOString(),
+        messages: [newMsg],
+      };
+      return [newTicket, ...prev];
+    });
+  }
+
+  function handleAdminReplySupportMessage(ticketId: string, text: string) {
+    const newMsg: SupportMessage = {
+      id: `msg-${Date.now()}`,
+      from: "admin",
+      senderName: "Support",
+      text,
+      timestamp: new Date().toISOString(),
+    };
+    setSupportTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId ? { ...t, messages: [...t.messages, newMsg] } : t,
+      ),
+    );
+  }
+
+  function handleCloseSupportTicket(ticketId: string) {
+    setSupportTickets((prev) =>
+      prev.map((t) => (t.id === ticketId ? { ...t, status: "closed" } : t)),
+    );
+  }
+
+  function handleClaimReferralBonus() {
+    if (!user || user.isAdmin) return;
+    const amount = referralBonuses[user.username] ?? 0;
+    if (amount <= 0) return;
+    setRegisteredUsers((prev) =>
+      prev.map((u) =>
+        u.username === user.username
+          ? { ...u, balance: (u.balance ?? 0) + amount }
+          : u,
+      ),
+    );
+    setUser((prev) =>
+      prev ? { ...prev, balance: (prev.balance ?? 0) + amount } : prev,
+    );
+    setReferralBonuses((prev) => ({ ...prev, [user.username]: 0 }));
+    toast.success(`PKR ${amount.toLocaleString()} referral bonus claimed! 🎉`);
   }
 
   return (
@@ -408,10 +575,16 @@ export default function App() {
         )}
         {page === "lobby" && <CasinoLobby onNavigate={navigateTo} />}
         {page === "games" && <CasinoGamesPage />}
-        {page === "vip" && <VipPage />}
+        {page === "vip" && (
+          <VipPage user={user} transactions={transactionRequests} />
+        )}
         {page === "promotions" && <PromotionsPage />}
         {page === "balance" && user && !user.isAdmin && (
-          <BalancePage user={user} transactions={transactionRequests} />
+          <BalancePage
+            user={user}
+            transactions={transactionRequests}
+            gameActivity={gameActivity}
+          />
         )}
         {page === "admin" && (
           <AdminPanel
@@ -420,11 +593,21 @@ export default function App() {
             onUpdateRequest={handleUpdateRequest}
             onDeleteMember={handleDeleteMember}
             onBroadcastNotification={handleBroadcastNotification}
+            supportTickets={supportTickets}
+            onAdminReplySupportMessage={handleAdminReplySupportMessage}
+            onCloseSupportTicket={handleCloseSupportTicket}
           />
         )}
       </main>
 
       <Footer />
+
+      <WhatsAppButton />
+      <HelplineChat
+        user={user}
+        supportTickets={supportTickets}
+        onSendSupportMessage={handleSendSupportMessage}
+      />
 
       <LoginModal
         open={modal === "login"}
@@ -439,6 +622,7 @@ export default function App() {
         onRegister={handleRegister}
         onSwitchToLogin={() => setModal("login")}
         existingUsers={registeredUsers.map((u) => u.username)}
+        existingPhones={registeredUsers.map((u) => u.phone)}
         initialReferralCode={initialReferralCode}
       />
 
@@ -454,6 +638,8 @@ export default function App() {
         onClose={() => setModal("none")}
         username={user?.username}
         onSubmitRequest={handleSubmitRequest}
+        hasDeposited={hasDeposited}
+        hasWithdrawnBefore={hasWithdrawnBefore}
       />
 
       <NotificationsPanel
@@ -473,6 +659,8 @@ export default function App() {
           username={user.username}
           referralCount={referralCount}
           referredMembers={referredMembers}
+          unclaimedBonus={referralBonuses[user.username] ?? 0}
+          onClaimBonus={handleClaimReferralBonus}
         />
       )}
 

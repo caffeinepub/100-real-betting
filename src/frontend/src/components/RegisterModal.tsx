@@ -19,6 +19,7 @@ interface RegisterModalProps {
   ) => void;
   onSwitchToLogin: () => void;
   existingUsers: string[];
+  existingPhones?: string[];
   initialReferralCode?: string;
 }
 
@@ -28,6 +29,7 @@ export function RegisterModal({
   onRegister,
   onSwitchToLogin,
   existingUsers,
+  existingPhones,
   initialReferralCode,
 }: RegisterModalProps) {
   const [name, setName] = useState("");
@@ -69,7 +71,13 @@ export function RegisterModal({
       return;
     }
     if (existingUsers.includes(username.trim())) {
-      toast.error("Username already taken. Please choose another.");
+      toast.error("This username is already taken. Please choose another.");
+      return;
+    }
+    if (existingPhones?.includes(phone.trim())) {
+      toast.error(
+        "This phone number is already registered. Please use a different number.",
+      );
       return;
     }
     if (password.length < 6) {
@@ -176,7 +184,7 @@ export function RegisterModal({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 6 characters"
-              data-ocid="register.input"
+              data-ocid="register.password.input"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>
@@ -193,7 +201,7 @@ export function RegisterModal({
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Repeat password"
-              data-ocid="register.input"
+              data-ocid="register.confirm.input"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
           </div>

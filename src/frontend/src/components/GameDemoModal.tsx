@@ -154,6 +154,24 @@ const SLOT_CONFIGS: Record<string, SlotConfig> = {
     bgGradient:
       "linear-gradient(135deg, oklch(0.14 0.11 27), oklch(0.10 0.08 15))",
   },
+  "Money Train": {
+    symbols: ["🚂", "💰", "🤠", "💣", "⭐", "🔫", "💵", "🎯"],
+    accentColor: "oklch(0.75 0.22 50)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.14 0.10 45), oklch(0.10 0.07 35))",
+  },
+  "Fishing God": {
+    symbols: ["🐟", "🐠", "🦈", "🐡", "🦐", "🐙", "🦞", "🎣"],
+    accentColor: "oklch(0.7 0.22 195)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.13 0.11 195), oklch(0.10 0.08 210))",
+  },
+  "Mega Win": {
+    symbols: ["💰", "⭐", "🏆", "💎", "🎰", "7️⃣", "🔔", "🍒"],
+    accentColor: "oklch(0.85 0.22 60)",
+    bgGradient:
+      "linear-gradient(135deg, oklch(0.15 0.10 60), oklch(0.11 0.07 50))",
+  },
 };
 
 const DEFAULT_SLOT_SYMBOLS = ["🍒", "🍋", "🍇", "🔔", "⭐", "💰", "🎰", "7️⃣"];
@@ -168,6 +186,8 @@ const DEFAULT_SLOT_CONFIG: SlotConfig = {
 function getGameType(provider: string, gameName: string): string {
   const p = provider.toLowerCase();
   const g = gameName.toLowerCase();
+
+  // Crash games
   if (
     p.includes("crash") ||
     g.includes("aviator") ||
@@ -176,6 +196,8 @@ function getGameType(provider: string, gameName: string): string {
     g.includes("crash")
   )
     return "crash";
+
+  // Fishing games
   if (
     p.includes("fishing") ||
     g.includes("ocean king") ||
@@ -185,21 +207,33 @@ function getGameType(provider: string, gameName: string): string {
     g.includes("pirate king")
   )
     return "fishing";
-  // Card/table games — must come BEFORE live check so specific game names override provider
+
+  // Dragon Tiger — must come BEFORE general card check
+  if (g.includes("dragon tiger") || g.includes("dragontiger"))
+    return "dragontiger";
+
+  // Baccarat — must come BEFORE general card check
+  if (g.includes("baccarat")) return "baccarat";
+
+  // Roulette → live
+  if (g.includes("roulette")) return "live";
+
+  // Card/table games
   if (
     p.includes("card") ||
     p.includes("poker") ||
     g.includes("teen patti") ||
     g.includes("andar") ||
-    g.includes("baccarat") ||
     g.includes("blackjack") ||
     g.includes("poker") ||
-    g.includes("dragon tiger") ||
     g.includes("royal flush")
   )
     return "card";
-  // Roulette is the live game; other live casino names fall through to slots if not card
-  if (g.includes("roulette")) return "live";
+
+  // Live casino provider default → live
+  if (p.includes("live casino") || p.includes("live")) return "live";
+
+  // Sports
   if (
     p.includes("sport") ||
     g.includes("cricket") ||
@@ -208,6 +242,8 @@ function getGameType(provider: string, gameName: string): string {
     g.includes("psl")
   )
     return "sports";
+
+  // Lottery / keno
   if (
     p.includes("lottery") ||
     p.includes("keno") ||
@@ -218,6 +254,7 @@ function getGameType(provider: string, gameName: string): string {
     g.includes("mega")
   )
     return "lottery";
+
   return "slots";
 }
 
@@ -833,6 +870,569 @@ function CardDemo() {
   );
 }
 
+// ===================== DRAGON TIGER DEMO =====================
+const DT_CARD_VALUES: Record<string, number> = {
+  A: 1,
+  "2": 2,
+  "3": 3,
+  "4": 4,
+  "5": 5,
+  "6": 6,
+  "7": 7,
+  "8": 8,
+  "9": 9,
+  "10": 10,
+  J: 11,
+  Q: 12,
+  K: 13,
+};
+
+function DragonTigerDemo() {
+  const [balance, setBalance] = useState(500);
+  const [bet, setBet] = useState(50);
+  const [side, setSide] = useState<"dragon" | "tiger" | "tie" | null>(null);
+  const [dragonCard, setDragonCard] = useState<ReturnType<
+    typeof randomCard
+  > | null>(null);
+  const [tigerCard, setTigerCard] = useState<ReturnType<
+    typeof randomCard
+  > | null>(null);
+  const [phase, setPhase] = useState<"bet" | "result">("bet");
+  const [resultMsg, setResultMsg] = useState("");
+  const [resultWin, setResultWin] = useState(false);
+
+  function deal() {
+    if (!side || balance < bet) return;
+    setBalance((b) => b - bet);
+    const dc = randomCard();
+    const tc = randomCard();
+    setDragonCard(dc);
+    setTigerCard(tc);
+    const dv = DT_CARD_VALUES[dc.label];
+    const tv = DT_CARD_VALUES[tc.label];
+    let winner: "dragon" | "tiger" | "tie";
+    if (dv > tv) winner = "dragon";
+    else if (tv > dv) winner = "tiger";
+    else winner = "tie";
+    if (winner === side) {
+      const payout = side === "tie" ? bet * 8 : bet * 2;
+      setBalance((b) => b + payout);
+      setResultMsg(`✅ ${winner.toUpperCase()} wins! +PKR ${payout}`);
+      setResultWin(true);
+    } else {
+      setResultMsg(`❌ ${winner.toUpperCase()} wins! Lost PKR ${bet}`);
+      setResultWin(false);
+    }
+    setPhase("result");
+  }
+
+  function reset() {
+    setDragonCard(null);
+    setTigerCard(null);
+    setSide(null);
+    setPhase("bet");
+    setResultMsg("");
+  }
+
+  const cardStyle = (suit: string) => ({
+    color:
+      suit === "♥" || suit === "♦"
+        ? "oklch(0.6 0.25 27)"
+        : "oklch(0.15 0.02 285)",
+    background: "white",
+    border: "2px solid oklch(0.85 0.02 285)",
+    borderRadius: 10,
+  });
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="rounded-2xl p-4 space-y-3"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.14 0.12 30), oklch(0.10 0.08 45))",
+          border: "2px solid oklch(0.65 0.22 50 / 0.5)",
+        }}
+      >
+        {/* Card zones */}
+        <div className="flex items-center justify-between gap-2">
+          {/* Dragon */}
+          <div className="flex-1 flex flex-col items-center gap-1">
+            <span
+              className="text-xs font-black"
+              style={{ color: "oklch(0.75 0.25 30)" }}
+            >
+              🐉 Dragon
+            </span>
+            <div
+              className="w-16 h-22 flex flex-col items-center justify-center text-xl font-black"
+              style={
+                dragonCard
+                  ? cardStyle(dragonCard.suit)
+                  : {
+                      background: "oklch(0.2 0.08 285)",
+                      border: "2px dashed oklch(0.4 0.08 285)",
+                      borderRadius: 10,
+                      width: 60,
+                      height: 80,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "oklch(0.45 0.05 285)",
+                    }
+              }
+            >
+              {dragonCard ? (
+                <>
+                  <span style={{ fontSize: 18 }}>{dragonCard.label}</span>
+                  <span style={{ fontSize: 20 }}>{dragonCard.suit}</span>
+                </>
+              ) : (
+                "?"
+              )}
+            </div>
+          </div>
+          {/* VS */}
+          <div className="flex flex-col items-center">
+            <span
+              className="text-lg font-black"
+              style={{ color: "oklch(0.85 0.18 50)" }}
+            >
+              VS
+            </span>
+          </div>
+          {/* Tiger */}
+          <div className="flex-1 flex flex-col items-center gap-1">
+            <span
+              className="text-xs font-black"
+              style={{ color: "oklch(0.7 0.22 270)" }}
+            >
+              🐯 Tiger
+            </span>
+            <div
+              className="w-16 flex flex-col items-center justify-center text-xl font-black"
+              style={
+                tigerCard
+                  ? cardStyle(tigerCard.suit)
+                  : {
+                      background: "oklch(0.2 0.08 285)",
+                      border: "2px dashed oklch(0.4 0.08 285)",
+                      borderRadius: 10,
+                      width: 60,
+                      height: 80,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "oklch(0.45 0.05 285)",
+                    }
+              }
+            >
+              {tigerCard ? (
+                <>
+                  <span style={{ fontSize: 18 }}>{tigerCard.label}</span>
+                  <span style={{ fontSize: 20 }}>{tigerCard.suit}</span>
+                </>
+              ) : (
+                "?"
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Bet selection */}
+        <div className="flex gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              if (phase === "bet") setSide("dragon");
+            }}
+            className="flex-1 rounded-lg py-2 text-xs font-black"
+            style={{
+              background:
+                side === "dragon"
+                  ? "oklch(0.55 0.25 27)"
+                  : "oklch(0.22 0.08 285)",
+              color: "white",
+              border:
+                side === "dragon" ? "2px solid white" : "2px solid transparent",
+            }}
+          >
+            🐉 Dragon
+            <br />
+            <span style={{ fontSize: 10 }}>2x</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (phase === "bet") setSide("tie");
+            }}
+            className="rounded-lg py-2 px-2 text-xs font-black"
+            style={{
+              background:
+                side === "tie"
+                  ? "oklch(0.55 0.22 130)"
+                  : "oklch(0.22 0.08 285)",
+              color: "white",
+              border:
+                side === "tie" ? "2px solid white" : "2px solid transparent",
+            }}
+          >
+            Tie
+            <br />
+            <span style={{ fontSize: 10 }}>8x</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (phase === "bet") setSide("tiger");
+            }}
+            className="flex-1 rounded-lg py-2 text-xs font-black"
+            style={{
+              background:
+                side === "tiger"
+                  ? "oklch(0.5 0.22 270)"
+                  : "oklch(0.22 0.08 285)",
+              color: "white",
+              border:
+                side === "tiger" ? "2px solid white" : "2px solid transparent",
+            }}
+          >
+            🐯 Tiger
+            <br />
+            <span style={{ fontSize: 10 }}>2x</span>
+          </button>
+        </div>
+
+        {/* Bet amounts */}
+        <div className="flex gap-2">
+          {[25, 50, 100, 200].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBet(v)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-black"
+              style={{
+                background:
+                  bet === v ? "oklch(0.65 0.22 50)" : "oklch(0.2 0.08 285)",
+                color: bet === v ? "black" : "white",
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+
+        {resultMsg && (
+          <p
+            className="text-center font-black text-sm"
+            style={{
+              color: resultWin ? "oklch(0.75 0.2 140)" : "oklch(0.65 0.25 27)",
+            }}
+          >
+            {resultMsg}
+          </p>
+        )}
+
+        {phase === "bet" ? (
+          <Button
+            type="button"
+            onClick={deal}
+            disabled={!side || balance < bet}
+            className="w-full h-11 font-black"
+            style={{
+              background:
+                !side || balance < bet
+                  ? "oklch(0.35 0.05 285)"
+                  : "linear-gradient(135deg, oklch(0.65 0.25 50), oklch(0.55 0.28 35))",
+              color: !side || balance < bet ? "oklch(0.5 0.03 285)" : "black",
+            }}
+          >
+            {!side ? "Select Dragon / Tiger / Tie" : `🃏 DEAL — PKR ${bet}`}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            onClick={reset}
+            className="w-full h-11 font-black"
+            style={{ background: "oklch(0.35 0.05 285)", color: "white" }}
+          >
+            Play Again
+          </Button>
+        )}
+      </div>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
+// ===================== BACCARAT DEMO =====================
+function baccaratValue(cards: ReturnType<typeof randomCard>[]) {
+  const total = cards.reduce((sum, c) => {
+    const v = DT_CARD_VALUES[c.label];
+    return sum + (v >= 10 ? 0 : v);
+  }, 0);
+  return total % 10;
+}
+
+function BaccaratDemo() {
+  const [balance, setBalance] = useState(500);
+  const [bet, setBet] = useState(50);
+  const [side, setSide] = useState<"player" | "banker" | "tie" | null>(null);
+  const [playerCards, setPlayerCards] = useState<
+    ReturnType<typeof randomCard>[]
+  >([]);
+  const [bankerCards, setBankerCards] = useState<
+    ReturnType<typeof randomCard>[]
+  >([]);
+  const [phase, setPhase] = useState<"bet" | "result">("bet");
+  const [resultMsg, setResultMsg] = useState("");
+  const [resultWin, setResultWin] = useState(false);
+
+  function deal() {
+    if (!side || balance < bet) return;
+    setBalance((b) => b - bet);
+    const pc = [randomCard(), randomCard()];
+    const bc = [randomCard(), randomCard()];
+    setPlayerCards(pc);
+    setBankerCards(bc);
+    const pv = baccaratValue(pc);
+    const bv = baccaratValue(bc);
+    let winner: "player" | "banker" | "tie";
+    if (pv > bv) winner = "player";
+    else if (bv > pv) winner = "banker";
+    else winner = "tie";
+    if (winner === side) {
+      const payout = side === "tie" ? bet * 9 : bet * 2;
+      setBalance((b) => b + payout);
+      setResultMsg(
+        `✅ ${winner.toUpperCase()} wins (${winner === "player" ? pv : bv})! +PKR ${payout}`,
+      );
+      setResultWin(true);
+    } else {
+      setResultMsg(
+        `❌ ${winner.toUpperCase()} wins! P:${pv} B:${bv} — Lost PKR ${bet}`,
+      );
+      setResultWin(false);
+    }
+    setPhase("result");
+  }
+
+  function reset() {
+    setPlayerCards([]);
+    setBankerCards([]);
+    setSide(null);
+    setPhase("bet");
+    setResultMsg("");
+  }
+
+  const cardStyle = (suit: string) => ({
+    color:
+      suit === "♥" || suit === "♦"
+        ? "oklch(0.6 0.25 27)"
+        : "oklch(0.15 0.02 285)",
+    background: "white",
+    border: "1.5px solid oklch(0.85 0.02 285)",
+    borderRadius: 8,
+    width: 44,
+    height: 60,
+    display: "flex" as const,
+    flexDirection: "column" as const,
+    alignItems: "center" as const,
+    justifyContent: "center" as const,
+    fontSize: 14,
+    fontWeight: 900,
+  });
+
+  const pv = playerCards.length ? baccaratValue(playerCards) : null;
+  const bv = bankerCards.length ? baccaratValue(bankerCards) : null;
+
+  return (
+    <div className="space-y-3">
+      <div
+        className="rounded-2xl p-4 space-y-3"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.12 0.10 160), oklch(0.09 0.07 140))",
+          border: "2px solid oklch(0.55 0.22 160 / 0.5)",
+        }}
+      >
+        {/* Scores */}
+        {phase === "result" && (
+          <div className="flex justify-around text-center">
+            <div>
+              <p className="text-xs" style={{ color: "oklch(0.65 0.05 285)" }}>
+                Player
+              </p>
+              <p
+                className="text-2xl font-black"
+                style={{ color: "oklch(0.75 0.22 220)" }}
+              >
+                {pv}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs" style={{ color: "oklch(0.65 0.05 285)" }}>
+                Banker
+              </p>
+              <p
+                className="text-2xl font-black"
+                style={{ color: "oklch(0.75 0.22 27)" }}
+              >
+                {bv}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Cards */}
+        {phase === "result" && (
+          <div className="flex justify-around">
+            <div className="flex flex-col items-center gap-1">
+              <span
+                className="text-xs font-bold"
+                style={{ color: "oklch(0.7 0.2 220)" }}
+              >
+                Player
+              </span>
+              <div className="flex gap-1">
+                {playerCards.map((c, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed positions
+                  <div key={i} style={cardStyle(c.suit)}>
+                    <span>{c.label}</span>
+                    <span>{c.suit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <span
+                className="text-xs font-bold"
+                style={{ color: "oklch(0.7 0.22 27)" }}
+              >
+                Banker
+              </span>
+              <div className="flex gap-1">
+                {bankerCards.map((c, i) => (
+                  // biome-ignore lint/suspicious/noArrayIndexKey: fixed positions
+                  <div key={i} style={cardStyle(c.suit)}>
+                    <span>{c.label}</span>
+                    <span>{c.suit}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bet selection */}
+        <div className="flex gap-1.5">
+          {(["player", "banker", "tie"] as const).map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              onClick={() => {
+                if (phase === "bet") setSide(opt);
+              }}
+              className="flex-1 rounded-lg py-2 text-xs font-black capitalize"
+              style={{
+                background:
+                  side === opt
+                    ? opt === "player"
+                      ? "oklch(0.5 0.22 220)"
+                      : opt === "banker"
+                        ? "oklch(0.5 0.22 27)"
+                        : "oklch(0.5 0.22 130)"
+                    : "oklch(0.22 0.08 285)",
+                color: "white",
+                border:
+                  side === opt ? "2px solid white" : "2px solid transparent",
+              }}
+            >
+              {opt === "player"
+                ? "👤 Player"
+                : opt === "banker"
+                  ? "🏦 Banker"
+                  : "🤝 Tie"}
+              <br />
+              <span style={{ fontSize: 10 }}>
+                {opt === "tie" ? "9x" : "2x"}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Bet amounts */}
+        <div className="flex gap-2">
+          {[25, 50, 100, 200].map((v) => (
+            <button
+              key={v}
+              type="button"
+              onClick={() => setBet(v)}
+              className="flex-1 rounded-lg py-1.5 text-xs font-black"
+              style={{
+                background:
+                  bet === v ? "oklch(0.55 0.22 160)" : "oklch(0.2 0.08 285)",
+                color: "white",
+              }}
+            >
+              {v}
+            </button>
+          ))}
+        </div>
+
+        {resultMsg && (
+          <p
+            className="text-center font-black text-sm"
+            style={{
+              color: resultWin ? "oklch(0.75 0.2 140)" : "oklch(0.65 0.25 27)",
+            }}
+          >
+            {resultMsg}
+          </p>
+        )}
+
+        {phase === "bet" ? (
+          <Button
+            type="button"
+            onClick={deal}
+            disabled={!side || balance < bet}
+            className="w-full h-11 font-black"
+            style={{
+              background:
+                !side || balance < bet
+                  ? "oklch(0.35 0.05 285)"
+                  : "linear-gradient(135deg, oklch(0.55 0.22 160), oklch(0.45 0.25 140))",
+              color: "white",
+            }}
+          >
+            {!side ? "Select Player / Banker / Tie" : `🃏 DEAL — PKR ${bet}`}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            onClick={reset}
+            className="w-full h-11 font-black"
+            style={{ background: "oklch(0.35 0.05 285)", color: "white" }}
+          >
+            Play Again
+          </Button>
+        )}
+      </div>
+      <div
+        className="text-xs text-center"
+        style={{ color: "oklch(0.55 0.05 285)" }}
+      >
+        Balance: PKR {balance.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
 // ===================== LIVE ROULETTE DEMO =====================
 const RED_NUMS = [
   1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
@@ -1344,6 +1944,8 @@ export function GameDemoModal({
     crash: "Crash Game",
     fishing: "Fishing",
     card: "Card Game",
+    dragontiger: "Dragon Tiger",
+    baccarat: "Baccarat",
     live: "Live Casino",
     sports: "Sports Betting",
     lottery: "Lottery",
@@ -1379,7 +1981,7 @@ export function GameDemoModal({
             </span>
           </div>
           <p className="text-xs" style={{ color: "oklch(0.60 0.05 285)" }}>
-            {provider} · {gameTypeLabels[gameType]}
+            {provider} · {gameTypeLabels[gameType] ?? gameType}
           </p>
         </DialogHeader>
 
@@ -1387,6 +1989,8 @@ export function GameDemoModal({
         {gameType === "crash" && <CrashDemo />}
         {gameType === "fishing" && <FishingDemo />}
         {gameType === "card" && <CardDemo />}
+        {gameType === "dragontiger" && <DragonTigerDemo />}
+        {gameType === "baccarat" && <BaccaratDemo />}
         {gameType === "live" && <LiveDemo />}
         {gameType === "sports" && <SportsDemo />}
         {gameType === "lottery" && <LotteryDemo />}

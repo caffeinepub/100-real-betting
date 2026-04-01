@@ -5,7 +5,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, Gift, Users } from "lucide-react";
+import { Copy, Gift, Share2, Users } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { toast } from "sonner";
 
 interface ReferralModalProps {
@@ -18,6 +19,8 @@ interface ReferralModalProps {
     name: string;
     joinedAt?: string;
   }>;
+  unclaimedBonus?: number;
+  onClaimBonus?: () => void;
 }
 
 export function ReferralModal({
@@ -26,6 +29,8 @@ export function ReferralModal({
   username,
   referralCount,
   referredMembers = [],
+  unclaimedBonus = 0,
+  onClaimBonus,
 }: ReferralModalProps) {
   const referralLink = `${window.location.origin}${window.location.pathname}?ref=${encodeURIComponent(username)}`;
 
@@ -34,6 +39,30 @@ export function ReferralModal({
       .writeText(referralLink)
       .then(() => toast.success("Referral link copied! 🎉"))
       .catch(() => toast.error("Could not copy link"));
+  }
+
+  function handleWhatsApp() {
+    window.open(
+      `https://wa.me/?text=Join+100%25Real+and+get+PKR+200+bonus!+%0A${encodeURIComponent(referralLink)}`,
+      "_blank",
+    );
+  }
+
+  function handleShare() {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "100%Real — PKR 200 Bonus",
+          text: "Join 100%Real and get PKR 200 welcome bonus!",
+          url: referralLink,
+        })
+        .catch(() => {});
+    } else {
+      navigator.clipboard
+        .writeText(referralLink)
+        .then(() => toast.success("Link copied! Share it anywhere 🎉"))
+        .catch(() => toast.error("Could not copy link"));
+    }
   }
 
   return (
@@ -110,6 +139,37 @@ export function ReferralModal({
             </p>
           </div>
         </div>
+
+        {/* Claim Bonus Button */}
+        {unclaimedBonus > 0 ? (
+          <button
+            type="button"
+            onClick={onClaimBonus}
+            data-ocid="referral.primary_button"
+            className="w-full py-3 rounded-xl font-black text-black text-lg flex items-center justify-center gap-2 animate-pulse"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.80 0.18 130), oklch(0.72 0.22 145))",
+              boxShadow: "0 4px 20px oklch(0.80 0.18 130 / 0.5)",
+            }}
+          >
+            🎁 CLAIM PKR {unclaimedBonus.toLocaleString()} Bonus!
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled
+            data-ocid="referral.secondary_button"
+            className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 opacity-50 cursor-not-allowed"
+            style={{
+              background: "oklch(0.22 0.06 285)",
+              color: "oklch(0.55 0.05 285)",
+              border: "1px solid oklch(0.28 0.06 285)",
+            }}
+          >
+            🎁 No bonus to claim yet — refer friends to earn 10%!
+          </button>
+        )}
 
         {/* Referred Members List */}
         {referredMembers.length > 0 && (
@@ -201,6 +261,50 @@ export function ReferralModal({
           </div>
         </div>
 
+        {/* Share Buttons */}
+        <div className="space-y-2">
+          <p
+            className="text-xs font-bold uppercase tracking-wider"
+            style={{ color: "oklch(0.60 0.06 285)" }}
+          >
+            Share &amp; Grow Your Team
+          </p>
+          <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
+            Share your link on WhatsApp, Telegram, or any platform to grow your
+            team
+          </p>
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              onClick={handleWhatsApp}
+              data-ocid="referral.primary_button"
+              className="flex-1 h-11 font-black text-white flex items-center justify-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #25D366, #128C7E)",
+                boxShadow: "0 4px 15px rgba(37, 211, 102, 0.35)",
+              }}
+            >
+              <SiWhatsapp size={18} />
+              WhatsApp
+            </Button>
+            <Button
+              type="button"
+              onClick={handleShare}
+              data-ocid="referral.secondary_button"
+              className="flex-1 h-11 font-black flex items-center justify-center gap-2"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.80 0.22 60))",
+                color: "black",
+                boxShadow: "0 4px 15px oklch(0.85 0.18 50 / 0.35)",
+              }}
+            >
+              <Share2 size={18} />
+              Share Link
+            </Button>
+          </div>
+        </div>
+
         {/* How it works */}
         <div
           className="rounded-xl p-4 space-y-2 border"
@@ -236,20 +340,6 @@ export function ReferralModal({
             </div>
           ))}
         </div>
-
-        <Button
-          type="button"
-          onClick={handleCopy}
-          data-ocid="referral.primary_button"
-          className="w-full font-black text-black h-11 text-base"
-          style={{
-            background:
-              "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.80 0.22 60))",
-          }}
-        >
-          <Copy size={16} className="mr-2" />
-          Copy My Referral Link
-        </Button>
       </DialogContent>
     </Dialog>
   );

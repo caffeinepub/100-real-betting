@@ -23,7 +23,10 @@ import {
   Bell,
   CheckCircle2,
   Clock,
+  Copy,
   Crown,
+  MessageSquare,
+  Send,
   Share2,
   ShieldCheck,
   Trash2,
@@ -34,7 +37,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { TransactionRequest, User } from "../App";
+import type { SupportTicket, TransactionRequest, User } from "../App";
 
 type MemberRecord = User & { password: string; referralCode?: string };
 
@@ -48,6 +51,9 @@ interface AdminPanelProps {
     title: string,
     detail: string,
   ) => void;
+  supportTickets: SupportTicket[];
+  onAdminReplySupportMessage: (ticketId: string, text: string) => void;
+  onCloseSupportTicket: (ticketId: string) => void;
 }
 
 export function AdminPanel({
@@ -56,6 +62,9 @@ export function AdminPanel({
   onUpdateRequest,
   onDeleteMember,
   onBroadcastNotification,
+  supportTickets,
+  onAdminReplySupportMessage,
+  onCloseSupportTicket,
 }: AdminPanelProps) {
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>(
     () => Object.fromEntries(members.map((m) => [m.username, true])),
@@ -77,6 +86,9 @@ export function AdminPanel({
   ).length;
   const approvedCount = transactionRequests.filter(
     (r) => r.status === "approved",
+  ).length;
+  const openTicketCount = supportTickets.filter(
+    (t) => t.status === "open",
   ).length;
   const rejectedCount = transactionRequests.filter(
     (r) => r.status === "rejected",
@@ -210,10 +222,108 @@ export function AdminPanel({
               <Bell size={15} className="mr-1.5" />
               Notifications
             </TabsTrigger>
+            <TabsTrigger
+              value="support"
+              data-ocid="admin.support.tab"
+              className="font-bold data-[state=active]:text-indigo-400"
+              style={{ color: "oklch(0.65 0.06 285)" }}
+            >
+              <MessageSquare size={15} className="mr-1.5" />
+              Support Chat
+              {openTicketCount > 0 && (
+                <span
+                  className="ml-2 px-1.5 py-0.5 rounded text-[10px] font-black animate-pulse"
+                  style={{
+                    background: "oklch(0.55 0.25 280 / 0.25)",
+                    color: "oklch(0.75 0.2 280)",
+                  }}
+                >
+                  {openTicketCount}
+                </span>
+              )}
+            </TabsTrigger>
           </TabsList>
 
           {/* Members Tab */}
           <TabsContent value="members">
+            {/* Share App Link Card */}
+            <div
+              className="rounded-2xl border p-5 mb-5 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+              style={{
+                background: "oklch(0.85 0.18 50 / 0.08)",
+                borderColor: "oklch(0.85 0.18 50 / 0.35)",
+              }}
+            >
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: "oklch(0.85 0.18 50 / 0.2)" }}
+                >
+                  <Share2 size={18} style={{ color: "oklch(0.85 0.18 50)" }} />
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className="font-black text-sm"
+                    style={{ color: "oklch(0.85 0.18 50)" }}
+                  >
+                    📢 Share App Link
+                  </p>
+                  <p
+                    className="text-xs truncate font-mono"
+                    style={{ color: "oklch(0.60 0.05 285)" }}
+                  >
+                    {window.location.origin}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: "oklch(0.55 0.05 285)" }}
+                  >
+                    Share this link to grow the community
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-2 flex-shrink-0">
+                <Button
+                  type="button"
+                  size="sm"
+                  data-ocid="admin.share.button"
+                  onClick={() => {
+                    navigator.clipboard
+                      .writeText(
+                        window.location.origin + window.location.pathname,
+                      )
+                      .then(() => toast.success("Link copied!"))
+                      .catch(() => toast.error("Could not copy"));
+                  }}
+                  className="h-9 px-3 font-black text-black text-xs flex items-center gap-1.5"
+                  style={{ background: "oklch(0.85 0.18 50)" }}
+                >
+                  <Copy size={13} />
+                  Copy Link
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  data-ocid="admin.whatsapp.button"
+                  onClick={() => {
+                    const url = encodeURIComponent(
+                      window.location.origin + window.location.pathname,
+                    );
+                    window.open(
+                      `https://wa.me/?text=Join+100%25Real+Casino+and+win+big!+%0A${url}`,
+                      "_blank",
+                    );
+                  }}
+                  className="h-9 px-3 font-black text-white text-xs flex items-center gap-1.5"
+                  style={{
+                    background: "linear-gradient(135deg, #25D366, #128C7E)",
+                  }}
+                >
+                  WhatsApp
+                </Button>
+              </div>
+            </div>
+
             <section
               className="rounded-2xl border overflow-hidden"
               style={{
@@ -680,6 +790,15 @@ export function AdminPanel({
               onBroadcast={onBroadcastNotification}
             />
           </TabsContent>
+
+          {/* Support Chat Tab */}
+          <TabsContent value="support">
+            <SupportChatTab
+              tickets={supportTickets}
+              onReply={onAdminReplySupportMessage}
+              onClose={onCloseSupportTicket}
+            />
+          </TabsContent>
         </Tabs>
       </div>
     </div>
@@ -910,6 +1029,245 @@ function NotificationsTab({
           📢 Send Notification
         </Button>
       </div>
+    </div>
+  );
+}
+
+function SupportChatTab({
+  tickets,
+  onReply,
+  onClose,
+}: {
+  tickets: SupportTicket[];
+  onReply: (ticketId: string, text: string) => void;
+  onClose: (ticketId: string) => void;
+}) {
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+
+  const sorted = [...tickets].sort((a, b) => {
+    if (a.status === "open" && b.status !== "open") return -1;
+    if (b.status === "open" && a.status !== "open") return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
+
+  const selected = tickets.find((t) => t.id === selectedId);
+
+  function sendReply() {
+    if (!selectedId || !replyText.trim()) return;
+    onReply(selectedId, replyText.trim());
+    setReplyText("");
+  }
+
+  return (
+    <div
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: "oklch(0.13 0.08 285)",
+        border: "1px solid oklch(0.25 0.08 285)",
+      }}
+      data-ocid="admin.support.panel"
+    >
+      <div
+        className="px-6 py-4 border-b flex items-center gap-3"
+        style={{ borderColor: "oklch(0.22 0.08 285)" }}
+      >
+        <MessageSquare size={18} style={{ color: "oklch(0.65 0.2 280)" }} />
+        <h2
+          className="font-bold text-lg"
+          style={{ color: "oklch(0.65 0.2 280)" }}
+        >
+          Support Tickets
+        </h2>
+      </div>
+
+      {sorted.length === 0 ? (
+        <div
+          className="flex flex-col items-center justify-center py-16 gap-3"
+          data-ocid="admin.support.empty_state"
+        >
+          <MessageSquare size={40} style={{ color: "oklch(0.35 0.06 285)" }} />
+          <p style={{ color: "oklch(0.50 0.05 285)" }}>
+            No support tickets yet
+          </p>
+        </div>
+      ) : (
+        <div
+          className="divide-y"
+          style={{ borderColor: "oklch(0.18 0.06 285)" }}
+        >
+          {sorted.map((ticket, idx) => (
+            <div key={ticket.id} data-ocid={`admin.support.item.${idx + 1}`}>
+              {/* Ticket row */}
+              <button
+                type="button"
+                onClick={() =>
+                  setSelectedId(selectedId === ticket.id ? null : ticket.id)
+                }
+                className="w-full text-left px-6 py-4 hover:bg-white/5 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-8 w-8 rounded-full flex items-center justify-center text-sm font-black"
+                      style={{
+                        background: "oklch(0.55 0.25 280 / 0.2)",
+                        color: "oklch(0.65 0.2 280)",
+                      }}
+                    >
+                      {ticket.displayName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm text-white">
+                        {ticket.displayName}
+                        <span
+                          className="ml-1.5 text-xs font-normal"
+                          style={{ color: "oklch(0.55 0.05 285)" }}
+                        >
+                          @
+                          {ticket.username.startsWith("guest_")
+                            ? "guest"
+                            : ticket.username}
+                        </span>
+                      </p>
+                      <p
+                        className="text-xs truncate max-w-[220px]"
+                        style={{ color: "oklch(0.55 0.05 285)" }}
+                      >
+                        {ticket.messages[ticket.messages.length - 1]?.text ??
+                          "No messages"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span
+                      className="px-2 py-0.5 rounded-full text-[10px] font-black"
+                      style={{
+                        background:
+                          ticket.status === "open"
+                            ? "oklch(0.75 0.2 150 / 0.2)"
+                            : "oklch(0.45 0.05 285 / 0.3)",
+                        color:
+                          ticket.status === "open"
+                            ? "oklch(0.75 0.2 150)"
+                            : "oklch(0.55 0.05 285)",
+                      }}
+                    >
+                      {ticket.status}
+                    </span>
+                    <span
+                      className="text-[10px]"
+                      style={{ color: "oklch(0.45 0.04 285)" }}
+                    >
+                      {new Date(ticket.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </button>
+
+              {/* Expanded chat */}
+              {selectedId === ticket.id && (
+                <div
+                  className="px-6 pb-4 space-y-3"
+                  style={{ borderTop: "1px solid oklch(0.18 0.06 285)" }}
+                >
+                  {/* Messages */}
+                  <div
+                    className="rounded-xl p-3 space-y-2 max-h-60 overflow-y-auto"
+                    style={{ background: "oklch(0.10 0.06 285)" }}
+                  >
+                    {selected?.messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${msg.from === "admin" ? "justify-end" : "justify-start"}`}
+                      >
+                        <div
+                          className="max-w-[75%] rounded-xl px-3 py-2 text-sm"
+                          style={{
+                            background:
+                              msg.from === "admin"
+                                ? "linear-gradient(135deg, oklch(0.55 0.25 280), oklch(0.45 0.28 265))"
+                                : "oklch(0.20 0.08 285)",
+                            color: "white",
+                          }}
+                        >
+                          <p
+                            className="text-[10px] font-bold mb-0.5"
+                            style={{
+                              color:
+                                msg.from === "admin"
+                                  ? "rgba(255,255,255,0.7)"
+                                  : "oklch(0.65 0.2 195)",
+                            }}
+                          >
+                            {msg.from === "admin"
+                              ? "You (Admin)"
+                              : msg.senderName}
+                          </p>
+                          <p>{msg.text}</p>
+                          <p className="text-[9px] mt-0.5 opacity-60">
+                            {new Date(msg.timestamp).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Reply input */}
+                  {ticket.status === "open" && (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        data-ocid={`admin.support.input.${idx + 1}`}
+                        value={replyText}
+                        onChange={(e) => setReplyText(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && sendReply()}
+                        placeholder="Type your reply..."
+                        className="flex-1 rounded-xl px-3 py-2 text-sm outline-none"
+                        style={{
+                          background: "oklch(0.18 0.08 285)",
+                          border: "1px solid oklch(0.28 0.1 285)",
+                          color: "white",
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        data-ocid={`admin.support.submit_button.${idx + 1}`}
+                        onClick={sendReply}
+                        disabled={!replyText.trim()}
+                        className="h-9 px-3"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, oklch(0.55 0.25 280), oklch(0.45 0.28 265))",
+                          color: "white",
+                        }}
+                      >
+                        <Send size={14} />
+                      </Button>
+                      <Button
+                        type="button"
+                        data-ocid={`admin.support.close_button.${idx + 1}`}
+                        onClick={() => {
+                          onClose(ticket.id);
+                          setSelectedId(null);
+                          toast.success("Ticket closed");
+                        }}
+                        variant="outline"
+                        className="h-9 px-3 text-xs font-bold border-red-500/30 text-red-400 hover:bg-red-500/10"
+                      >
+                        Close Ticket
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
