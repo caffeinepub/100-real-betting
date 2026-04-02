@@ -97,21 +97,6 @@ export type SupportTicket = {
 
 const REFERRAL_BONUS_PKR = 200;
 
-type RegisteredUser = User & {
-  password: string;
-  referralCode?: string;
-  balance: number;
-};
-function getStoredUsers(): RegisteredUser[] {
-  try {
-    const stored =
-      localStorage.getItem("app_registered_users") ??
-      sessionStorage.getItem("app_registered_users");
-    if (stored) return JSON.parse(stored) as RegisteredUser[];
-  } catch {}
-  return [];
-}
-
 function useLocalState<T>(key: string, defaultValue: T) {
   const [state, setState] = useState<T>(() => {
     try {
@@ -216,14 +201,24 @@ export default function App() {
     }
   }, [registeredUsers, user, setUser]);
 
-  // Always sync registeredUsers from storage on mount and whenever admin panel is opened
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional re-sync on page change
+  // Sync registeredUsers from storage on mount in case state is stale
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only sync
   useEffect(() => {
-    const freshUsers = getStoredUsers();
-    if (freshUsers.length > 0) {
-      setRegisteredUsers(freshUsers);
-    }
-  }, [page]); // re-sync every time page changes so admin panel always has latest data
+    type RegisteredUser = User & {
+      password: string;
+      referralCode?: string;
+      balance: number;
+    };
+    try {
+      const stored =
+        localStorage.getItem("app_registered_users") ??
+        sessionStorage.getItem("app_registered_users");
+      if (stored) {
+        const freshUsers = JSON.parse(stored) as RegisteredUser[];
+        setRegisteredUsers(freshUsers);
+      }
+    } catch {}
+  }, []); // intentionally only on mount
 
   const notifications =
     user && !user.isAdmin ? (userNotifications[user.username] ?? []) : [];
@@ -413,7 +408,7 @@ export default function App() {
       setPage("admin");
       return true;
     }
-    const found = getStoredUsers().find(
+    const found = registeredUsers.find(
       (u) => u.username === username && u.password === password,
     );
     if (found) {
@@ -722,8 +717,8 @@ export default function App() {
         onClose={() => setModal("none")}
         onRegister={handleRegister}
         onSwitchToLogin={() => setModal("login")}
-        existingUsers={getStoredUsers().map((u) => u.username)}
-        existingPhones={getStoredUsers().map((u) => u.phone)}
+        existingUsers={registeredUsers.map((u) => u.username)}
+        existingPhones={registeredUsers.map((u) => u.phone)}
         initialReferralCode={initialReferralCode}
       />
 

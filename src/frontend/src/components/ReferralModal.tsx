@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Copy, Gift, Share2, Users } from "lucide-react";
+import { Copy, Gift, Share2, TrendingUp, Users } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { toast } from "sonner";
 
@@ -14,6 +14,7 @@ interface ReferralModalProps {
   onClose: () => void;
   username: string;
   referralCount: number;
+  totalEarned?: number;
   referredMembers?: Array<{
     username: string;
     name: string;
@@ -28,6 +29,7 @@ export function ReferralModal({
   onClose,
   username,
   referralCount,
+  totalEarned = 0,
   referredMembers = [],
   unclaimedBonus = 0,
   onClaimBonus,
@@ -46,6 +48,13 @@ export function ReferralModal({
       `https://wa.me/?text=Join+100%25Real+and+get+PKR+200+bonus!+%0A${encodeURIComponent(referralLink)}`,
       "_blank",
     );
+  }
+
+  function handleCopyCode() {
+    navigator.clipboard
+      .writeText(username)
+      .then(() => toast.success("Referral code copied! 🎉"))
+      .catch(() => toast.error("Could not copy code"));
   }
 
   function handleShare() {
@@ -98,44 +107,112 @@ export function ReferralModal({
           </p>
         </DialogHeader>
 
-        {/* Referral Count */}
+        {/* Your Unique Referral Code */}
         <div
-          className="rounded-xl p-4 flex items-center gap-4 border"
+          className="rounded-xl p-4 border"
           style={{
-            background: "oklch(0.80 0.18 130 / 0.08)",
-            borderColor: "oklch(0.80 0.18 130 / 0.25)",
+            background: "oklch(0.85 0.18 50 / 0.08)",
+            borderColor: "oklch(0.85 0.18 50 / 0.4)",
           }}
+          data-ocid="referral.code.panel"
         >
-          <div
-            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: "oklch(0.80 0.18 130 / 0.2)" }}
+          <p
+            className="text-xs font-bold uppercase tracking-wider mb-2"
+            style={{ color: "oklch(0.85 0.18 50)" }}
           >
-            <Users size={22} style={{ color: "oklch(0.80 0.18 130)" }} />
+            Your Unique Referral Code
+          </p>
+          <div className="flex items-center gap-3">
+            <span
+              className="flex-1 text-2xl font-black tracking-widest text-center py-2 rounded-lg"
+              style={{
+                fontFamily: "monospace",
+                color: "oklch(0.95 0.15 55)",
+                background: "oklch(0.85 0.18 50 / 0.12)",
+                letterSpacing: "0.18em",
+                border: "1px solid oklch(0.85 0.18 50 / 0.25)",
+              }}
+            >
+              {username}
+            </span>
+            <button
+              type="button"
+              onClick={handleCopyCode}
+              data-ocid="referral.code.button"
+              className="flex items-center gap-1.5 h-10 px-4 rounded-lg font-black text-black text-sm flex-shrink-0"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.85 0.18 50), oklch(0.80 0.22 60))",
+                boxShadow: "0 2px 10px oklch(0.85 0.18 50 / 0.35)",
+              }}
+            >
+              <Copy size={14} />
+              Copy Code
+            </button>
           </div>
-          <div>
+          <p className="text-xs mt-2" style={{ color: "oklch(0.65 0.10 55)" }}>
+            Share this code with friends — they enter it at signup to unlock
+            your 10% referral bonus
+          </p>
+        </div>
+
+        {/* Earnings Summary — two stat cards */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Friends Joined */}
+          <div
+            className="rounded-xl p-4 border flex flex-col gap-2"
+            style={{
+              background: "oklch(0.80 0.18 130 / 0.08)",
+              borderColor: "oklch(0.80 0.18 130 / 0.25)",
+            }}
+            data-ocid="referral.count.panel"
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.80 0.18 130 / 0.2)" }}
+            >
+              <Users size={18} style={{ color: "oklch(0.80 0.18 130)" }} />
+            </div>
             <p
-              className="text-3xl font-black"
+              className="text-3xl font-black leading-none"
               style={{ color: "oklch(0.80 0.18 130)" }}
-              data-ocid="referral.count.panel"
             >
               {referralCount}
             </p>
             <p
-              className="text-sm font-semibold"
+              className="text-xs font-semibold"
               style={{ color: "oklch(0.60 0.05 285)" }}
             >
-              {referralCount === 1 ? "Friend Referred" : "Friends Referred"}
+              {referralCount === 1 ? "Friend Joined" : "Friends Joined"}
             </p>
           </div>
-          <div className="ml-auto text-right">
+
+          {/* Total Earned */}
+          <div
+            className="rounded-xl p-4 border flex flex-col gap-2"
+            style={{
+              background: "oklch(0.85 0.18 50 / 0.08)",
+              borderColor: "oklch(0.85 0.18 50 / 0.25)",
+            }}
+            data-ocid="referral.earnings.panel"
+          >
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ background: "oklch(0.85 0.18 50 / 0.2)" }}
+            >
+              <TrendingUp size={18} style={{ color: "oklch(0.85 0.18 50)" }} />
+            </div>
             <p
-              className="text-xl font-black"
+              className="text-xl font-black leading-none"
               style={{ color: "oklch(0.85 0.18 50)" }}
             >
-              PKR {(referralCount * 200).toLocaleString()}
+              PKR {totalEarned.toLocaleString()}
             </p>
-            <p className="text-xs" style={{ color: "oklch(0.55 0.05 285)" }}>
-              Bonus given to friends
+            <p
+              className="text-xs font-semibold"
+              style={{ color: "oklch(0.60 0.05 285)" }}
+            >
+              Your Referral Earnings
             </p>
           </div>
         </div>

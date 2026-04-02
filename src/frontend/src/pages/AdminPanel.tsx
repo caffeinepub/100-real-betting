@@ -25,6 +25,7 @@ import {
   Clock,
   Copy,
   Crown,
+  Link,
   MessageSquare,
   Send,
   Share2,
@@ -272,7 +273,7 @@ export function AdminPanel({
                     className="text-xs truncate font-mono"
                     style={{ color: "oklch(0.60 0.05 285)" }}
                   >
-                    {window.location.origin}
+                    {`${window.location.origin}/?ref=admin100real`}
                   </p>
                   <p
                     className="text-xs"
@@ -289,9 +290,7 @@ export function AdminPanel({
                   data-ocid="admin.share.button"
                   onClick={() => {
                     navigator.clipboard
-                      .writeText(
-                        window.location.origin + window.location.pathname,
-                      )
+                      .writeText(`${window.location.origin}/?ref=admin100real`)
                       .then(() => toast.success("Link copied!"))
                       .catch(() => toast.error("Could not copy"));
                   }}
@@ -307,7 +306,7 @@ export function AdminPanel({
                   data-ocid="admin.whatsapp.button"
                   onClick={() => {
                     const url = encodeURIComponent(
-                      window.location.origin + window.location.pathname,
+                      `${window.location.origin}/?ref=admin100real`,
                     );
                     window.open(
                       `https://wa.me/?text=Join+100%25Real+Casino+and+win+big!+%0A${url}`,
@@ -525,6 +524,33 @@ export function AdminPanel({
                               >
                                 {isActive ? "Deactivate" : "Activate"}
                               </Button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const refLink = `${window.location.origin}/?ref=${encodeURIComponent(member.username)}`;
+                                  navigator.clipboard
+                                    .writeText(refLink)
+                                    .then(() =>
+                                      toast.success(
+                                        `Referral link copied for ${member.username}!`,
+                                      ),
+                                    )
+                                    .catch(() =>
+                                      toast.error("Could not copy link"),
+                                    );
+                                }}
+                                className="ml-2 p-1.5 rounded-lg transition-colors"
+                                style={{
+                                  color: "oklch(0.85 0.18 50)",
+                                  background: "oklch(0.85 0.18 50 / 0.1)",
+                                  border:
+                                    "1px solid oklch(0.85 0.18 50 / 0.25)",
+                                }}
+                                title="Copy Ref Link"
+                                data-ocid={`admin.members.secondary_button.${i + 1}`}
+                              >
+                                <Link size={14} />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => {
