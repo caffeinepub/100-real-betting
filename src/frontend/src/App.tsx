@@ -689,7 +689,6 @@ export default function App() {
         )}
         {page === "admin" && (
           <AdminPanel
-            members={registeredUsers}
             transactionRequests={transactionRequests}
             onUpdateRequest={handleUpdateRequest}
             onDeleteMember={handleDeleteMember}
