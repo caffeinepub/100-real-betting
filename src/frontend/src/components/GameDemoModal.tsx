@@ -12,6 +12,11 @@ interface GameDemoModalProps {
   onClose: () => void;
   gameName: string;
   provider: string;
+  gameCategory?: string;
+  hasDeposited?: boolean;
+  userBalance?: number;
+  onBalanceChange?: (delta: number) => void;
+  onOpenDeposit?: () => void;
 }
 
 // ===================== SLOT CONFIG =====================
@@ -263,7 +268,15 @@ function randomSymbolFrom(symbols: string[]) {
   return symbols[Math.floor(Math.random() * symbols.length)];
 }
 
-function SlotsDemo({ config }: { config?: SlotConfig }) {
+function SlotsDemo({
+  config,
+  initialBalance,
+  onBalanceChange,
+}: {
+  config?: SlotConfig;
+  initialBalance: number;
+  onBalanceChange: (delta: number) => void;
+}) {
   const cfg = config ?? DEFAULT_SLOT_CONFIG;
   const [reels, setReels] = useState([
     cfg.symbols[0],
@@ -271,7 +284,7 @@ function SlotsDemo({ config }: { config?: SlotConfig }) {
     cfg.symbols[0],
   ]);
   const [spinning, setSpinning] = useState(false);
-  const [balance, setBalance] = useState(500);
+  const [balance, setBalance] = useState(initialBalance);
   const [result, setResult] = useState<string | null>(null);
   const [spinCount, setSpinCount] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -279,6 +292,7 @@ function SlotsDemo({ config }: { config?: SlotConfig }) {
   function spin() {
     if (spinning || balance < 50) return;
     setBalance((b) => b - 50);
+    onBalanceChange(-50);
     setResult(null);
     setSpinning(true);
     setSpinCount((c) => c + 1);
@@ -303,6 +317,7 @@ function SlotsDemo({ config }: { config?: SlotConfig }) {
       if (final[0] === final[1] && final[1] === final[2]) {
         setResult("jackpot");
         setBalance((b) => b + 500);
+        onBalanceChange(500);
       } else if (
         final[0] === final[1] ||
         final[1] === final[2] ||
@@ -310,6 +325,7 @@ function SlotsDemo({ config }: { config?: SlotConfig }) {
       ) {
         setResult("win");
         setBalance((b) => b + 200);
+        onBalanceChange(200);
       } else setResult("lose");
     }, 1500);
   }
@@ -401,12 +417,15 @@ function SlotsDemo({ config }: { config?: SlotConfig }) {
 }
 
 // ===================== CRASH DEMO =====================
-function CrashDemo() {
+function CrashDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
   const [phase, setPhase] = useState<"waiting" | "flying" | "crashed">(
     "waiting",
   );
   const [multiplier, setMultiplier] = useState(1.0);
-  const [balance, setBalance] = useState(500);
+  const [balance, setBalance] = useState(initialBalance);
   const [bet, setBet] = useState(50);
   const [cashedOut, setCashedOut] = useState<number | null>(null);
   const [crashAt, setCrashAt] = useState(1.0);
@@ -417,6 +436,7 @@ function CrashDemo() {
   function startRound() {
     if (balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     setCashedOut(null);
     const target = 1 + Math.random() * 8;
     setCrashAt(target);
@@ -442,6 +462,7 @@ function CrashDemo() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     const win = Math.floor(bet * multiplier);
     setBalance((b) => b + win);
+    onBalanceChange(win);
     setCashedOut(win);
     setPhase("crashed");
   }
@@ -547,8 +568,11 @@ function CrashDemo() {
 }
 
 // ===================== FISHING DEMO =====================
-function FishingDemo() {
-  const [balance, setBalance] = useState(500);
+function FishingDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [fish, setFish] = useState(() =>
     Array.from({ length: 8 }, (_, i) => ({
       id: i,
@@ -573,6 +597,7 @@ function FishingDemo() {
         prev.map((fi) => (fi.id === f.id ? { ...fi, hit: true } : fi)),
       );
       setBalance((b) => b + f.points);
+      onBalanceChange(f.points);
       setMsg(`+PKR ${f.points}!`);
       setTimeout(() => setMsg(""), 1000);
     } else {
@@ -691,8 +716,11 @@ function randomCard() {
   };
 }
 
-function CardDemo() {
-  const [balance, setBalance] = useState(500);
+function CardDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [bet, setBet] = useState(50);
   const [playerCards, setPlayerCards] = useState<
     ReturnType<typeof randomCard>[]
@@ -706,6 +734,7 @@ function CardDemo() {
   function deal() {
     if (balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     setPlayerCards([randomCard(), randomCard(), randomCard()]);
     setDealerCards([randomCard(), randomCard(), randomCard()]);
     setPhase("playing");
@@ -716,9 +745,11 @@ function CardDemo() {
     const dScore = dealerCards.reduce((a, c) => a + Math.min(c.value, 10), 0);
     if (pScore > dScore) {
       setBalance((b) => b + bet * 2);
+      onBalanceChange(bet * 2);
       setResultMsg(`You Win! +PKR ${bet * 2}`);
     } else if (pScore === dScore) {
       setBalance((b) => b + bet);
+      onBalanceChange(bet);
       setResultMsg(`Tie! Bet returned PKR ${bet}`);
     } else setResultMsg(`Dealer wins! Lost PKR ${bet}`);
     setPhase("result");
@@ -887,8 +918,11 @@ const DT_CARD_VALUES: Record<string, number> = {
   K: 13,
 };
 
-function DragonTigerDemo() {
-  const [balance, setBalance] = useState(500);
+function DragonTigerDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [bet, setBet] = useState(50);
   const [side, setSide] = useState<"dragon" | "tiger" | "tie" | null>(null);
   const [dragonCard, setDragonCard] = useState<ReturnType<
@@ -904,6 +938,7 @@ function DragonTigerDemo() {
   function deal() {
     if (!side || balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     const dc = randomCard();
     const tc = randomCard();
     setDragonCard(dc);
@@ -917,6 +952,7 @@ function DragonTigerDemo() {
     if (winner === side) {
       const payout = side === "tie" ? bet * 8 : bet * 2;
       setBalance((b) => b + payout);
+      onBalanceChange(payout);
       setResultMsg(`✅ ${winner.toUpperCase()} wins! +PKR ${payout}`);
       setResultWin(true);
     } else {
@@ -1179,8 +1215,11 @@ function baccaratValue(cards: ReturnType<typeof randomCard>[]) {
   return total % 10;
 }
 
-function BaccaratDemo() {
-  const [balance, setBalance] = useState(500);
+function BaccaratDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [bet, setBet] = useState(50);
   const [side, setSide] = useState<"player" | "banker" | "tie" | null>(null);
   const [playerCards, setPlayerCards] = useState<
@@ -1196,6 +1235,7 @@ function BaccaratDemo() {
   function deal() {
     if (!side || balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     const pc = [randomCard(), randomCard()];
     const bc = [randomCard(), randomCard()];
     setPlayerCards(pc);
@@ -1209,6 +1249,7 @@ function BaccaratDemo() {
     if (winner === side) {
       const payout = side === "tie" ? bet * 9 : bet * 2;
       setBalance((b) => b + payout);
+      onBalanceChange(payout);
       setResultMsg(
         `✅ ${winner.toUpperCase()} wins (${winner === "player" ? pv : bv})! +PKR ${payout}`,
       );
@@ -1438,8 +1479,11 @@ const RED_NUMS = [
   1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36,
 ];
 
-function LiveDemo() {
-  const [balance, setBalance] = useState(500);
+function LiveDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [bet, setBet] = useState(50);
   const [betOn, setBetOn] = useState<
     "red" | "black" | "green" | "odd" | "even"
@@ -1451,6 +1495,7 @@ function LiveDemo() {
   function spin() {
     if (balance < bet || spinning) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     setSpinning(true);
     setMsg("");
     let ticks = 0;
@@ -1473,6 +1518,7 @@ function LiveDemo() {
           const mult = betOn === "green" ? 35 : 2;
           const win = bet * mult;
           setBalance((b) => b + win);
+          onBalanceChange(win);
           setMsg(`✅ ${landed} — You Win! +PKR ${win}`);
         } else setMsg(`❌ ${landed} — Lost PKR ${bet}`);
       }
@@ -1629,8 +1675,11 @@ const MATCHES = [
   },
 ];
 
-function SportsDemo() {
-  const [balance, setBalance] = useState(500);
+function SportsDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [selections, setSelections] = useState<
     { matchId: number; team: string; odd: number }[]
   >([]);
@@ -1652,11 +1701,13 @@ function SportsDemo() {
   function placeBet() {
     if (selections.length === 0 || balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     const win = Math.random() > 0.5;
     const totalOdd = selections.reduce((a, s) => a * s.odd, 1);
     if (win) {
       const winAmt = Math.floor(bet * totalOdd);
       setBalance((b) => b + winAmt);
+      onBalanceChange(winAmt);
       setResult(`✅ Won! +PKR ${winAmt} (odds: ${totalOdd.toFixed(2)}x)`);
     } else setResult(`❌ Lost PKR ${bet}. Better luck next time!`);
     setSelections([]);
@@ -1787,8 +1838,11 @@ function SportsDemo() {
 }
 
 // ===================== LOTTERY DEMO =====================
-function LotteryDemo() {
-  const [balance, setBalance] = useState(500);
+function LotteryDemo({
+  initialBalance,
+  onBalanceChange,
+}: { initialBalance: number; onBalanceChange: (delta: number) => void }) {
+  const [balance, setBalance] = useState(initialBalance);
   const [picks, setPicks] = useState<number[]>([]);
   const [drawn, setDrawn] = useState<number[]>([]);
   const [phase, setPhase] = useState<"pick" | "result">("pick");
@@ -1808,15 +1862,25 @@ function LotteryDemo() {
   function draw() {
     if (picks.length < 5 || balance < bet) return;
     setBalance((b) => b - bet);
+    onBalanceChange(-bet);
     const nums = Array.from({ length: 25 }, (_, i) => i + 1);
     const shuffled = nums.sort(() => Math.random() - 0.5).slice(0, 5);
     setDrawn(shuffled);
     setPhase("result");
     const matches = picks.filter((p) => shuffled.includes(p)).length;
-    if (matches >= 5) setBalance((b) => b + 5000);
-    else if (matches >= 4) setBalance((b) => b + 500);
-    else if (matches >= 3) setBalance((b) => b + 150);
-    else if (matches >= 2) setBalance((b) => b + 75);
+    if (matches >= 5) {
+      setBalance((b) => b + 5000);
+      onBalanceChange(5000);
+    } else if (matches >= 4) {
+      setBalance((b) => b + 500);
+      onBalanceChange(500);
+    } else if (matches >= 3) {
+      setBalance((b) => b + 150);
+      onBalanceChange(150);
+    } else if (matches >= 2) {
+      setBalance((b) => b + 75);
+      onBalanceChange(75);
+    }
   }
 
   function reset() {
@@ -1935,9 +1999,58 @@ export function GameDemoModal({
   onClose,
   gameName,
   provider,
+  hasDeposited = false,
+  userBalance = 0,
+  onBalanceChange = () => {},
+  onOpenDeposit = () => {},
 }: GameDemoModalProps) {
   const gameType = getGameType(provider, gameName);
   const slotConfig = SLOT_CONFIGS[gameName];
+
+  if (!hasDeposited) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+        <DialogContent
+          style={{
+            background: "oklch(0.13 0.05 285)",
+            border: "1px solid oklch(0.25 0.08 285)",
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle style={{ color: "oklch(0.92 0.18 85)" }}>
+              Deposit Required
+            </DialogTitle>
+          </DialogHeader>
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">🔒</div>
+            <p style={{ color: "oklch(0.75 0.05 285)" }} className="mb-2">
+              You need to make a deposit first to play games.
+            </p>
+            <p
+              style={{ color: "oklch(0.55 0.04 285)", fontSize: "0.85rem" }}
+              className="mb-6"
+            >
+              Minimum deposit: PKR 500 via JazzCash or Easypaisa
+            </p>
+            <Button
+              data-ocid="gamedemo.deposit.primary_button"
+              onClick={() => {
+                onClose();
+                onOpenDeposit();
+              }}
+              style={{
+                background: "oklch(0.75 0.18 85)",
+                color: "black",
+                fontWeight: 700,
+              }}
+            >
+              Deposit Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   const gameTypeLabels: Record<string, string> = {
     slots: "Slots",
@@ -1985,22 +2098,61 @@ export function GameDemoModal({
           </p>
         </DialogHeader>
 
-        {gameType === "slots" && <SlotsDemo config={slotConfig} />}
-        {gameType === "crash" && <CrashDemo />}
-        {gameType === "fishing" && <FishingDemo />}
-        {gameType === "card" && <CardDemo />}
-        {gameType === "dragontiger" && <DragonTigerDemo />}
-        {gameType === "baccarat" && <BaccaratDemo />}
-        {gameType === "live" && <LiveDemo />}
-        {gameType === "sports" && <SportsDemo />}
-        {gameType === "lottery" && <LotteryDemo />}
-
-        <p
-          className="text-[10px] text-center"
-          style={{ color: "oklch(0.45 0.04 285)" }}
-        >
-          Demo mode · No real money involved
-        </p>
+        {gameType === "slots" && (
+          <SlotsDemo
+            config={slotConfig}
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "crash" && (
+          <CrashDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "fishing" && (
+          <FishingDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "card" && (
+          <CardDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "dragontiger" && (
+          <DragonTigerDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "baccarat" && (
+          <BaccaratDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "live" && (
+          <LiveDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "sports" && (
+          <SportsDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
+        {gameType === "lottery" && (
+          <LotteryDemo
+            initialBalance={userBalance}
+            onBalanceChange={onBalanceChange}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

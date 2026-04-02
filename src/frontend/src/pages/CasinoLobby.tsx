@@ -4,6 +4,10 @@ import type { Page } from "../App";
 
 interface CasinoLobbyProps {
   onNavigate: (p: Page) => void;
+  hasDeposited: boolean;
+  userBalance: number;
+  onGameBalanceChange: (delta: number) => void;
+  onOpenDeposit: () => void;
 }
 
 type GameCard = { name: string; gradient: string; badge?: string };
@@ -207,7 +211,13 @@ function GameCardComp({
   );
 }
 
-export function CasinoLobby({ onNavigate }: CasinoLobbyProps) {
+export function CasinoLobby({
+  onNavigate,
+  hasDeposited,
+  userBalance,
+  onGameBalanceChange,
+  onOpenDeposit,
+}: CasinoLobbyProps) {
   const [gameDemo, setGameDemo] = useState<{
     name: string;
     provider: string;
@@ -317,6 +327,11 @@ export function CasinoLobby({ onNavigate }: CasinoLobbyProps) {
         onClose={() => setGameDemo(null)}
         gameName={gameDemo?.name ?? ""}
         provider={gameDemo?.provider ?? ""}
+        gameCategory={gameDemo?.gameCategory ?? ""}
+        hasDeposited={hasDeposited}
+        userBalance={userBalance}
+        onBalanceChange={onGameBalanceChange}
+        onOpenDeposit={onOpenDeposit}
       />
     </div>
   );

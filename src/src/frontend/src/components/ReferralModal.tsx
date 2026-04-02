@@ -21,7 +21,9 @@ export function ReferralModal({
   username,
   referralCount,
 }: ReferralModalProps) {
-  const referralLink = `https://100real.app/ref/${username}`;
+  const siteOrigin =
+    typeof window !== "undefined" ? window.location.origin : "";
+  const referralLink = `${siteOrigin}?ref=${encodeURIComponent(username)}`;
 
   function handleCopy() {
     navigator.clipboard

@@ -12,7 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   CheckCircle2,
   Clock,
+  Copy,
   Crown,
+  ExternalLink,
   Share2,
   ShieldCheck,
   TrendingDown,
@@ -31,6 +33,12 @@ interface AdminPanelProps {
   onUpdateRequest: (id: string, status: "approved" | "rejected") => void;
 }
 
+const SITE_URL =
+  typeof window !== "undefined"
+    ? window.location.origin
+    : "https://100real.app";
+const ADMIN_REF_CODE = "admin100real";
+
 export function AdminPanel({
   members,
   transactionRequests,
@@ -39,6 +47,8 @@ export function AdminPanel({
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>(
     () => Object.fromEntries(members.map((m) => [m.username, true])),
   );
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
 
   function toggleStatus(username: string) {
     setActiveStatuses((prev) => ({ ...prev, [username]: !prev[username] }));
@@ -46,6 +56,29 @@ export function AdminPanel({
 
   function getReferralCount(username: string) {
     return members.filter((m) => m.referralCode === username).length;
+  }
+
+  const referralLink = `${SITE_URL}?ref=${ADMIN_REF_CODE}`;
+
+  function copyLink() {
+    navigator.clipboard.writeText(referralLink).then(() => {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    });
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(ADMIN_REF_CODE).then(() => {
+      setCopiedCode(true);
+      setTimeout(() => setCopiedCode(false), 2000);
+    });
+  }
+
+  function shareWhatsApp() {
+    const msg = encodeURIComponent(
+      `🎰 Join 100%Real Casino & get PKR 200 bonus!\n\nUse my referral code: *${ADMIN_REF_CODE}*\n\nSign up here: ${referralLink}`,
+    );
+    window.open(`https://wa.me/?text=${msg}`, "_blank");
   }
 
   const totalMembers = members.length;
@@ -184,6 +217,137 @@ export function AdminPanel({
 
           {/* Members Tab */}
           <TabsContent value="members">
+            {/* Referral Link Card */}
+            <div
+              className="rounded-2xl border p-5 mb-6"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.18 0.12 50 / 0.5), oklch(0.13 0.08 285))",
+                borderColor: "oklch(0.85 0.18 50 / 0.4)",
+              }}
+              data-ocid="admin.referral.card"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <Share2 size={18} style={{ color: "oklch(0.85 0.18 50)" }} />
+                <h2
+                  className="font-black text-base"
+                  style={{ color: "oklch(0.85 0.18 50)" }}
+                >
+                  Site Referral Link
+                </h2>
+                <Badge
+                  className="text-[10px] font-black"
+                  style={{
+                    background: "oklch(0.85 0.18 50 / 0.2)",
+                    color: "oklch(0.85 0.18 50)",
+                    border: "1px solid oklch(0.85 0.18 50 / 0.4)",
+                  }}
+                >
+                  Share to grow community
+                </Badge>
+              </div>
+
+              {/* Referral Code Row */}
+              <div className="flex flex-wrap items-center gap-3 mb-3">
+                <div>
+                  <p
+                    className="text-[10px] font-semibold mb-1"
+                    style={{ color: "oklch(0.60 0.05 285)" }}
+                  >
+                    REFERRAL CODE
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="font-mono font-black text-lg px-3 py-1 rounded-lg tracking-widest"
+                      style={{
+                        background: "oklch(0.85 0.18 50 / 0.15)",
+                        color: "oklch(0.85 0.18 50)",
+                        border: "1px solid oklch(0.85 0.18 50 / 0.35)",
+                        letterSpacing: "0.12em",
+                      }}
+                    >
+                      {ADMIN_REF_CODE}
+                    </span>
+                    <Button
+                      size="sm"
+                      onClick={copyCode}
+                      className="h-8 px-3 text-xs font-bold"
+                      style={{
+                        background: copiedCode
+                          ? "oklch(0.80 0.18 130 / 0.2)"
+                          : "oklch(0.85 0.18 50 / 0.15)",
+                        color: copiedCode
+                          ? "oklch(0.80 0.18 130)"
+                          : "oklch(0.85 0.18 50)",
+                        border: `1px solid ${copiedCode ? "oklch(0.80 0.18 130 / 0.4)" : "oklch(0.85 0.18 50 / 0.35)"}`,
+                      }}
+                    >
+                      <Copy size={12} className="mr-1" />
+                      {copiedCode ? "Copied!" : "Copy Code"}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Referral Link Row */}
+              <div className="mb-4">
+                <p
+                  className="text-[10px] font-semibold mb-1"
+                  style={{ color: "oklch(0.60 0.05 285)" }}
+                >
+                  REFERRAL LINK
+                </p>
+                <div
+                  className="flex items-center gap-2 rounded-lg px-3 py-2 font-mono text-xs break-all"
+                  style={{
+                    background: "oklch(0.10 0.06 285)",
+                    border: "1px solid oklch(0.25 0.08 285)",
+                    color: "oklch(0.70 0.12 195)",
+                  }}
+                >
+                  <ExternalLink
+                    size={12}
+                    style={{ color: "oklch(0.85 0.18 50)", flexShrink: 0 }}
+                  />
+                  <span className="flex-1 select-all">{referralLink}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  onClick={copyLink}
+                  className="h-9 px-4 text-sm font-black"
+                  style={{
+                    background: copiedLink
+                      ? "oklch(0.80 0.18 130 / 0.2)"
+                      : "oklch(0.85 0.18 50 / 0.2)",
+                    color: copiedLink
+                      ? "oklch(0.80 0.18 130)"
+                      : "oklch(0.85 0.18 50)",
+                    border: `1px solid ${copiedLink ? "oklch(0.80 0.18 130 / 0.4)" : "oklch(0.85 0.18 50 / 0.4)"}`,
+                  }}
+                  data-ocid="admin.referral.copy_button"
+                >
+                  <Copy size={14} className="mr-1.5" />
+                  {copiedLink ? "Copied!" : "Copy Link"}
+                </Button>
+                <Button
+                  onClick={shareWhatsApp}
+                  className="h-9 px-4 text-sm font-black"
+                  style={{
+                    background: "oklch(0.60 0.18 145 / 0.2)",
+                    color: "oklch(0.75 0.18 145)",
+                    border: "1px solid oklch(0.60 0.18 145 / 0.4)",
+                  }}
+                  data-ocid="admin.referral.whatsapp_button"
+                >
+                  <Share2 size={14} className="mr-1.5" />
+                  Share via WhatsApp
+                </Button>
+              </div>
+            </div>
+
             <section
               className="rounded-2xl border overflow-hidden"
               style={{

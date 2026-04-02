@@ -366,6 +366,22 @@ export default function App() {
     setModal("none");
   }
 
+  function handleGameBalanceChange(delta: number) {
+    if (!user || user.isAdmin) return;
+    setRegisteredUsers((prev) =>
+      prev.map((u) =>
+        u.username === user.username
+          ? { ...u, balance: Math.max(0, (u.balance ?? 0) + delta) }
+          : u,
+      ),
+    );
+    setUser((prev) =>
+      prev
+        ? { ...prev, balance: Math.max(0, (prev.balance ?? 0) + delta) }
+        : prev,
+    );
+  }
+
   function handleSubmitRequest(
     req: Omit<TransactionRequest, "id" | "status" | "submittedAt">,
   ) {
@@ -573,7 +589,15 @@ export default function App() {
             </button>
           </div>
         )}
-        {page === "lobby" && <CasinoLobby onNavigate={navigateTo} />}
+        {page === "lobby" && (
+          <CasinoLobby
+            onNavigate={navigateTo}
+            hasDeposited={hasDeposited}
+            userBalance={user?.balance ?? 0}
+            onGameBalanceChange={handleGameBalanceChange}
+            onOpenDeposit={() => setModal("deposit")}
+          />
+        )}
         {page === "games" && <CasinoGamesPage />}
         {page === "vip" && (
           <VipPage user={user} transactions={transactionRequests} />

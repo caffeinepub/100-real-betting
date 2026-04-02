@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import type { User } from "../App";
 
@@ -19,6 +19,7 @@ interface RegisterModalProps {
   ) => void;
   onSwitchToLogin: () => void;
   existingUsers: string[];
+  defaultReferralCode?: string;
 }
 
 export function RegisterModal({
@@ -27,14 +28,22 @@ export function RegisterModal({
   onRegister,
   onSwitchToLogin,
   existingUsers,
+  defaultReferralCode = "",
 }: RegisterModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [referral, setReferral] = useState("");
+  const [referral, setReferral] = useState(defaultReferralCode);
   const [loading, setLoading] = useState(false);
+
+  // When modal opens, pre-fill referral code if provided
+  useEffect(() => {
+    if (open && defaultReferralCode) {
+      setReferral(defaultReferralCode);
+    }
+  }, [open, defaultReferralCode]);
 
   function reset() {
     setName("");
