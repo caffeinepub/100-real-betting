@@ -36,13 +36,18 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import type { SupportTicket, TransactionRequest, User } from "../App";
 
-type MemberRecord = User & { password: string; referralCode?: string };
+type MemberRecord = User & {
+  password: string;
+  referralCode?: string;
+  balance: number;
+};
 
 interface AdminPanelProps {
+  members: MemberRecord[];
   transactionRequests: TransactionRequest[];
   onUpdateRequest: (id: string, status: "approved" | "rejected") => void;
   onDeleteMember: (username: string) => void;
@@ -57,6 +62,7 @@ interface AdminPanelProps {
 }
 
 export function AdminPanel({
+  members,
   transactionRequests,
   onUpdateRequest,
   onDeleteMember,
@@ -65,56 +71,9 @@ export function AdminPanel({
   onAdminReplySupportMessage,
   onCloseSupportTicket,
 }: AdminPanelProps) {
-  const [members, setMembers] = useState<MemberRecord[]>(() => {
-    try {
-      const stored =
-        localStorage.getItem("app_registered_users") ??
-        sessionStorage.getItem("app_registered_users");
-      if (stored) return JSON.parse(stored) as MemberRecord[];
-    } catch {}
-    return [];
-  });
-
   const [activeStatuses, setActiveStatuses] = useState<Record<string, boolean>>(
     {},
   );
-
-  // Re-read on mount and on storage changes from other tabs
-  useEffect(() => {
-    function syncFromStorage() {
-      try {
-        const stored =
-          localStorage.getItem("app_registered_users") ??
-          sessionStorage.getItem("app_registered_users");
-        if (stored) {
-          const parsed = JSON.parse(stored) as MemberRecord[];
-          setMembers(parsed);
-          setActiveStatuses(
-            Object.fromEntries(parsed.map((m) => [m.username, true])),
-          );
-        }
-      } catch {}
-    }
-    syncFromStorage();
-    window.addEventListener("storage", syncFromStorage);
-    return () => window.removeEventListener("storage", syncFromStorage);
-  }, []);
-
-  // Poll every 2 seconds to catch registrations from same tab
-  useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        const stored =
-          localStorage.getItem("app_registered_users") ??
-          sessionStorage.getItem("app_registered_users");
-        if (stored) {
-          const parsed = JSON.parse(stored) as MemberRecord[];
-          setMembers(parsed);
-        }
-      } catch {}
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   function toggleStatus(username: string) {
     setActiveStatuses((prev) => ({ ...prev, [username]: !prev[username] }));
@@ -856,7 +815,10 @@ export function AdminPanel({
           </TabsContent>
 
           <TabsContent value="notifications">
-            <NotificationsTab onBroadcast={onBroadcastNotification} />
+            <NotificationsTab
+              onBroadcast={onBroadcastNotification}
+              members={members}
+            />
           </TabsContent>
 
           {/* Support Chat Tab */}
@@ -978,35 +940,15 @@ function StatCard({
 
 function NotificationsTab({
   onBroadcast,
+  members,
 }: {
   onBroadcast: (
     targets: string[] | "all",
     title: string,
     detail: string,
   ) => void;
+  members: MemberRecord[];
 }) {
-  const [members, setMembers] = useState<MemberRecord[]>(() => {
-    try {
-      const stored =
-        localStorage.getItem("app_registered_users") ??
-        sessionStorage.getItem("app_registered_users");
-      if (stored) return JSON.parse(stored) as MemberRecord[];
-    } catch {}
-    return [];
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        const stored =
-          localStorage.getItem("app_registered_users") ??
-          sessionStorage.getItem("app_registered_users");
-        if (stored) setMembers(JSON.parse(stored) as MemberRecord[]);
-      } catch {}
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
   const [recipient, setRecipient] = useState("all");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
