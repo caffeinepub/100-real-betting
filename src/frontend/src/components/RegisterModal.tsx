@@ -134,7 +134,7 @@ export function RegisterModal({
               id="reg-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Muhammad Ali"
+              placeholder="Your full name"
               data-ocid="register.name.input"
               className="bg-input border-border text-foreground placeholder:text-muted-foreground"
             />
